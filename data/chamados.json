@@ -1,0 +1,24 @@
+[
+  {
+    "setor_loja": "Cadastro",
+    "solicitante": "Everina",
+    "dificuldade": "Baixa",
+    "descricao": "Ensinei o processo de cadastro de embalagens via WMS Smart exportando para o ERP Winthor.",
+    "resolucao": null,
+    "status": "Fila",
+    "data_registro": "2026-05-11 14:24:00",
+    "anexo_path": null,
+    "id": "e73dab1f-6376-4f13-a263-447922fb8fdb"
+  },
+  {
+    "setor_loja": "teste",
+    "solicitante": "teste ",
+    "dificuldade": "Baixa",
+    "descricao": "teste",
+    "resolucao": null,
+    "status": "Fila",
+    "data_registro": "2026-05-11 18:11:00",
+    "anexo_path": null,
+    "id": "ed7e3541-0bf7-4f01-bb59-9670ba495cfd"
+  }
+]

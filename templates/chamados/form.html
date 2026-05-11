@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Registrar Chamado - MaqControl{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto fade-up">
+    <div class="mb-8 flex items-center gap-4">
+        <a href="/chamados/" class="btn-secondary p-2.5 rounded-xl">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+        </a>
+        <div>
+            <h1 class="text-3xl font-bold text-white">{% if chamado %}Editar Chamado{% else %}Novo Chamado{% endif %}</h1>
+            <p class="text-slate-400">{% if chamado %}Atualize os dados da solicitação #{{ chamado.id[:8] }}{% else %}Preencha os dados da solicitação.{% endif %}</p>
+        </div>
+    </div>
+
+    {% if erro %}
+    <div class="bg-red-500/20 border border-red-500/50 text-red-200 p-4 rounded-xl mb-6 flex items-center gap-3">
+        <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <span>{{ erro }}</span>
+    </div>
+    {% endif %}
+
+    <div class="glass p-8 rounded-3xl">
+        <form action="{% if chamado %}/chamados/{{ chamado.id }}/editar{% else %}/chamados/novo{% endif %}" method="POST" enctype="multipart/form-data" class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Data de Registro -->
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-semibold text-slate-300 mb-2">Data e Hora do Registro</label>
+                    <div class="flex items-center gap-2">
+                        <input type="datetime-local" id="data_registro" name="data_registro" value="{{ hoje }}" 
+                               class="input-glass bg-white/5 cursor-default" readonly required>
+                        <button type="button" onclick="toggleDateEdit()" id="btn-edit-date" class="btn-secondary p-2.5 rounded-xl" title="Editar data (registro retroativo)">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Solicitante -->
+                <div>
+                    <label for="solicitante" class="block text-sm font-semibold text-slate-300 mb-2">Solicitante *</label>
+                    <input type="text" id="solicitante" name="solicitante" value="{{ chamado.solicitante if chamado else '' }}" class="input-glass" placeholder="Nome completo" required>
+                </div>
+
+                <!-- Setor/Loja -->
+                <div>
+                    <label for="setor_loja" class="block text-sm font-semibold text-slate-300 mb-2">Setor ou Loja *</label>
+                    <input type="text" id="setor_loja" name="setor_loja" value="{{ chamado.setor_loja if chamado else '' }}" class="input-glass" placeholder="Ex: Loja 01, TI, RH" required>
+                </div>
+
+                <!-- Dificuldade -->
+                <div>
+                    <label for="dificuldade" class="block text-sm font-semibold text-slate-300 mb-2">Nível de Dificuldade *</label>
+                    <select id="dificuldade" name="dificuldade" class="input-glass" required>
+                        {% for opt in dificuldade_options %}
+                        <option value="{{ opt }}" {% if chamado and chamado.dificuldade.value == opt %}selected{% endif %}>{{ opt }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Status Inicial -->
+                <div>
+                    <label for="status" class="block text-sm font-semibold text-slate-300 mb-2">Status *</label>
+                    <select id="status" name="status" class="input-glass" required>
+                        {% for opt in status_options %}
+                        <option value="{{ opt }}" {% if chamado and chamado.status.value == opt %}selected{% endif %}>{{ opt }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- Descrição -->
+            <div>
+                <label for="descricao" class="block text-sm font-semibold text-slate-300 mb-2">Descrição do Problema *</label>
+                <textarea id="descricao" name="descricao" rows="4" class="input-glass" placeholder="Descreva detalhadamente o que está ocorrendo..." required>{{ chamado.descricao if chamado else '' }}</textarea>
+            </div>
+
+            <!-- Resolução (Apenas se já existir chamado) -->
+            {% if chamado %}
+            <div>
+                <label for="resolucao" class="block text-sm font-semibold text-slate-300 mb-2">Resolução / Solução Aplicada</label>
+                <textarea id="resolucao" name="resolucao" rows="3" class="input-glass border-verde-500/30" placeholder="Descreva o que foi feito para resolver...">{{ chamado.resolucao if chamado.resolucao else '' }}</textarea>
+            </div>
+            {% endif %}
+
+            <!-- Anexo -->
+            <div>
+                <label for="anexo" class="block text-sm font-semibold text-slate-300 mb-2">
+                    Anexo {% if chamado and chamado.anexo_path %}(Já possui anexo){% endif %}
+                </label>
+                <div class="relative group">
+                    <input type="file" id="anexo" name="anexo" class="hidden" onchange="updateFileName(this)">
+                    <label for="anexo" class="input-glass block cursor-pointer flex items-center justify-center gap-3 border-dashed border-2 border-white/20 hover:border-verde-500/50 hover:bg-white/5 transition-all py-6">
+                        <svg class="w-8 h-8 text-slate-500 group-hover:text-verde-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                        </svg>
+                        <span id="file-name-display" class="text-slate-400 group-hover:text-slate-200">
+                            {% if chamado and chamado.anexo_path %}Alterar anexo atual{% else %}Clique para selecionar ou arraste um arquivo{% endif %}
+                        </span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="pt-4 flex gap-4">
+                <button type="submit" class="btn-primary flex-1 py-4 text-lg">
+                    {% if chamado %}Salvar Alterações{% else %}Registrar Chamado{% endif %}
+                </button>
+                <a href="/chamados/" class="btn-secondary py-4 px-8 text-lg">
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function toggleDateEdit() {
+        const input = document.getElementById('data_registro');
+        const btn = document.getElementById('btn-edit-date');
+        
+        if (input.hasAttribute('readonly')) {
+            input.removeAttribute('readonly');
+            input.classList.remove('bg-white/5', 'cursor-default');
+            input.focus();
+            btn.classList.add('bg-verde-600/30', 'text-verde-300', 'border-verde-500/50');
+        } else {
+            input.setAttribute('readonly', true);
+            input.classList.add('bg-white/5', 'cursor-default');
+            btn.classList.remove('bg-verde-600/30', 'text-verde-300', 'border-verde-500/50');
+        }
+    }
+
+    function updateFileName(input) {
+        const display = document.getElementById('file-name-display');
+        if (input.files && input.files[0]) {
+            display.textContent = input.files[0].name;
+            display.classList.add('text-verde-400');
+        } else {
+            display.textContent = 'Clique para selecionar ou arraste um arquivo';
+            display.classList.remove('text-verde-400');
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,11 @@
+[
+  {
+    "id": "9d1869ef-6c1f-4b56-a971-ba25a99accf1",
+    "maquina_id": "bc9cf208-a4d4-45e7-8533-dc88fa9a25e8",
+    "data_manutencao": "2026-04-16",
+    "descricao": "Teste",
+    "responsavel": "Paulo",
+    "tipo": "Preventiva",
+    "observacoes": null
+  }
+]

@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — MaqControl{% endblock %}
+
+{% block extra_head %}
+<!-- FullCalendar JS via CDN -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="fade-up space-y-6">
+
+  <!-- Cabeçalho -->
+  <div class="flex items-center justify-between flex-wrap gap-3">
+    <div>
+      <h1 class="text-2xl font-bold text-white">Dashboard</h1>
+      <p class="text-slate-400 text-sm mt-0.5">Visão geral do parque de máquinas</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <a href="/manutencoes/nova" class="btn-primary">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Registrar Manutenção
+      </a>
+      <a href="/setores/novo" class="btn-primary">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Novo Setor
+      </a>
+      <a href="/maquinas/nova" class="btn-primary">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        Nova Máquina
+      </a>
+    </div>
+  </div>
+
+  <!-- Cards de resumo -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Total -->
+    <div class="glass rounded-2xl p-5 fade-up" style="animation-delay:.05s">
+      <p class="text-xs text-slate-400 font-medium uppercase tracking-wider">Total de Máquinas</p>
+      <p class="text-4xl font-bold text-white mt-2">{{ total_maquinas }}</p>
+      <p class="text-xs text-slate-500 mt-1">em {{ total_setores }} setor(es)</p>
+    </div>
+
+    <!-- OK -->
+    <div class="glass rounded-2xl p-5 status-ok fade-up" style="animation-delay:.1s">
+      <p class="text-xs text-verde-400 font-medium uppercase tracking-wider">✓ OK</p>
+      <p class="text-4xl font-bold text-verde-300 mt-2">{{ contagem_status['OK'] }}</p>
+      <p class="text-xs text-slate-500 mt-1">em dia com manutenção</p>
+    </div>
+
+    <!-- Manutenção próxima -->
+    <div class="glass rounded-2xl p-5 status-proxima fade-up" style="animation-delay:.15s">
+      <p class="text-xs text-yellow-400 font-medium uppercase tracking-wider">⚠ Atenção</p>
+      <p class="text-4xl font-bold text-yellow-300 mt-2">{{ contagem_status['Manutenção Próxima'] }}</p>
+      <p class="text-xs text-slate-500 mt-1">manutenção nos próx. 15 dias</p>
+    </div>
+
+    <!-- Precisa manutenção -->
+    <div class="glass rounded-2xl p-5 status-precisa fade-up" style="animation-delay:.2s">
+      <p class="text-xs text-red-400 font-medium uppercase tracking-wider">✗ Urgente</p>
+      <p class="text-4xl font-bold text-red-300 mt-2">{{ contagem_status['Precisa de Manutenção'] }}</p>
+      <p class="text-xs text-slate-500 mt-1">manutenção atrasada</p>
+    </div>
+  </div>
+
+  <!-- Gráficos -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <!-- Gráfico pizza por setor -->
+    <div class="glass rounded-2xl p-5 fade-up" style="animation-delay:.25s">
+      <h2 class="text-sm font-semibold text-slate-300 mb-4">Máquinas por Setor</h2>
+      <div class="flex justify-center">
+        <canvas id="chart-setores" style="max-height:220px;max-width:220px"></canvas>
+      </div>
+      {% if not dist_setores %}
+      <p class="text-center text-slate-500 text-sm mt-4">Nenhuma máquina cadastrada</p>
+      {% endif %}
+    </div>
+
+    <!-- Calendário de Manutenções (Trocado de lugar) -->
+    {% include "dashboard/widgets/calendario_manutencoes.html" %}
+  </div>
+
+  <!-- Dashboard: Heatmap e Saúde Hardware -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    {% include "dashboard/widgets/heatmap_setor_status.html" %}
+    
+    <!-- Gráfico de Saúde do Hardware -->
+    <div class="glass rounded-2xl p-5 fade-up" style="animation-delay:.3s">
+      <h2 class="text-sm font-semibold text-slate-300 mb-4">Saúde do Hardware (Performance)</h2>
+      <div class="flex justify-center">
+        <canvas id="chart-hardware" style="max-height:220px;max-width:320px"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Lista de atenção -->
+  {% if maquinas_atencao %}
+  <div class="glass rounded-2xl p-5 fade-up" style="animation-delay:.35s">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-sm font-semibold text-slate-300">🔔 Máquinas que Precisam de Atenção</h2>
+      <a href="/maquinas/" class="text-xs text-verde-400 hover:underline">Ver todas</a>
+    </div>
+    <div class="space-y-2">
+      {% for m in maquinas_atencao %}
+      <a href="/maquinas/{{ m.id }}"
+        class="flex items-center justify-between p-3 rounded-xl hover:bg-white/5 transition-all group">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg bg-slate-700/50 flex items-center justify-center text-xs shrink-0">
+            {{ '💻' if m.tipo.value == 'Notebook' else '🖥️' }}
+          </div>
+          <div>
+            <p class="text-sm font-medium text-white group-hover:text-verde-300 transition-colors">{{ m.nome }}</p>
+            <p class="text-xs text-slate-500">
+              {% if m.proxima_manutencao %}
+              Próxima: {{ m.proxima_manutencao.strftime('%d/%m/%Y') if m.proxima_manutencao else '—' }}
+              {% else %}
+              Sem registro de manutenção
+              {% endif %}
+            </p>
+          </div>
+        </div>
+        <span class="text-xs px-2.5 py-1 rounded-full font-medium
+          {% if m.status.value == 'Precisa de Manutenção' %}badge-precisa
+          {% elif m.status.value == 'Manutenção Próxima' %}badge-proxima
+          {% else %}badge-sem-registro{% endif %}">
+          {{ m.status.value }}
+        </span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% else %}
+  <div class="glass rounded-2xl p-8 text-center fade-up" style="animation-delay:.35s">
+    <p class="text-4xl mb-2">🎉</p>
+    <p class="text-slate-300 font-medium">Tudo em dia!</p>
+    <p class="text-slate-500 text-sm mt-1">Nenhuma máquina precisa de atenção agora.</p>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<!-- Dados do Dashboard para o JavaScript -->
+<script id="dashboard-data" type="application/json">
+  {{ {
+    "setores": dist_setores,
+    "setores_status": setores_status,
+    "eventos_calendario": eventos_calendario,
+    "setor_nome_para_id": setor_nome_para_id,
+    "status": [
+      contagem_status.get('OK', 0),
+      contagem_status.get('Manutenção Próxima', 0),
+      contagem_status.get('Precisa de Manutenção', 0),
+      contagem_status.get('Sem Registro de Manutenção', 0)
+    ],
+    "saude_hardware": saude_hardware
+  } | tojson | safe }}
+</script>
+
+<script>
+  // Recupera os dados do script JSON acima
+  const dashboardData = JSON.parse(document.getElementById('dashboard-data').textContent);
+
+  const isLight = document.documentElement.classList.contains('light');
+  const textColor = isLight ? '#1a2e1a' : '#cbd5e1';
+  const gridColor = isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)';
+
+  // Gráfico de setores (pizza)
+  const setoresLabels = Object.keys(dashboardData.setores);
+  const setoresValues = Object.values(dashboardData.setores);
+  const verdes = ['#22c55e', '#16a34a', '#15803d', '#166534', '#4ade80', '#86efac', '#052e16', '#dcfce7'];
+
+  if (setoresLabels.length > 0) {
+    new Chart(document.getElementById('chart-setores'), {
+      type: 'doughnut',
+      data: {
+        labels: setoresLabels,
+        datasets: [{ data: setoresValues, backgroundColor: verdes, borderWidth: 2, borderColor: 'transparent' }]
+      },
+      options: {
+        plugins: { legend: { labels: { color: textColor, font: { family: 'Sora', size: 11 }, padding: 12 } } },
+        cutout: '65%',
+      }
+    });
+  }
+
+  // Gráfico de Saúde de Hardware (Doughnut)
+  const hardwareLabels = Object.keys(dashboardData.saude_hardware);
+  const hardwareValues = Object.values(dashboardData.saude_hardware);
+  const hardwareColorsMap = {
+    'Moderna': '#22c55e',
+    'Fraca': '#f59e0b',
+    'Obsoleta': '#ef4444',
+    'Dados Insuficientes': '#6b7280'
+  };
+  const bgColorsHardware = hardwareLabels.map(label => hardwareColorsMap[label] || '#6b7280');
+
+  if (hardwareLabels.length > 0) {
+    new Chart(document.getElementById('chart-hardware'), {
+      type: 'doughnut',
+      data: {
+        labels: hardwareLabels,
+        datasets: [{
+          data: hardwareValues,
+          backgroundColor: bgColorsHardware,
+          borderWidth: 2,
+          borderColor: 'transparent'
+        }]
+      },
+      options: {
+        plugins: {
+          legend: {
+            position: 'right',
+            labels: {
+              color: textColor,
+              font: { family: 'Sora', size: 10 },
+              padding: 10
+            }
+          }
+        },
+        cutout: '65%',
+      }
+    });
+  }
+</script>
+{% endblock %}

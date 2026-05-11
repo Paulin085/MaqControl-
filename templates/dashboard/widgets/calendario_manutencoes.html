@@ -1,0 +1,141 @@
+<div class="glass rounded-2xl p-5 fade-up" style="animation-delay:.45s">
+  <h2 class="text-sm font-semibold text-slate-300 mb-4">Calendário de Manutenções</h2>
+  
+  {% if not eventos_calendario %}
+  <div class="p-8 text-center glass-strong rounded-xl border border-white/5">
+    <p class="text-3xl mb-2">📅</p>
+    <p class="text-slate-300 font-medium">Nenhuma manutenção agendada</p>
+    <p class="text-slate-500 text-sm mt-1">O calendário está vazio no momento.</p>
+  </div>
+  {% else %}
+  <div id="calendario" class="fc-theme-maqcontrol text-slate-200"></div>
+  {% endif %}
+</div>
+
+<style>
+  /* Customização do FullCalendar para o tema Glassmorphic */
+  .fc-theme-maqcontrol {
+    --fc-page-bg-color: transparent;
+    --fc-neutral-bg-color: rgba(255, 255, 255, 0.05);
+    --fc-neutral-text-color: #cbd5e1;
+    --fc-border-color: rgba(255, 255, 255, 0.1);
+    
+    --fc-button-text-color: #f1f5f9;
+    --fc-button-bg-color: rgba(255, 255, 255, 0.1);
+    --fc-button-border-color: rgba(255, 255, 255, 0.2);
+    --fc-button-hover-bg-color: rgba(255, 255, 255, 0.2);
+    --fc-button-hover-border-color: rgba(255, 255, 255, 0.3);
+    --fc-button-active-bg-color: rgba(34, 197, 94, 0.3);
+    --fc-button-active-border-color: #22c55e;
+    
+    --fc-event-bg-color: #3b82f6; /* Padrão, sobrescrito no JS */
+    --fc-event-border-color: transparent;
+    --fc-event-text-color: #fff;
+    
+    --fc-today-bg-color: rgba(34, 197, 94, 0.1);
+    
+    font-family: 'Sora', sans-serif;
+  }
+  
+  html.light .fc-theme-maqcontrol {
+    --fc-neutral-bg-color: rgba(0, 0, 0, 0.05);
+    --fc-neutral-text-color: #1a2e1a;
+    --fc-border-color: rgba(0, 0, 0, 0.1);
+    
+    --fc-button-text-color: #1a2e1a;
+    --fc-button-bg-color: rgba(0, 0, 0, 0.05);
+    --fc-button-border-color: rgba(0, 0, 0, 0.1);
+    --fc-button-hover-bg-color: rgba(0, 0, 0, 0.1);
+    --fc-button-hover-border-color: rgba(0, 0, 0, 0.2);
+    --fc-button-active-bg-color: rgba(34, 197, 94, 0.2);
+    --fc-button-active-border-color: #16a34a;
+    
+    --fc-today-bg-color: rgba(34, 197, 94, 0.2);
+  }
+  
+  .fc-theme-maqcontrol .fc-toolbar-title {
+    font-size: 1.125rem !important;
+    font-weight: 600;
+  }
+  
+  .fc-theme-maqcontrol .fc-button {
+    border-radius: 8px !important;
+    text-transform: capitalize;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  
+  .fc-theme-maqcontrol .fc-event {
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 2px 4px;
+    font-size: 0.75rem;
+    transition: transform 0.1s, opacity 0.2s;
+  }
+  
+  .fc-theme-maqcontrol .fc-event:hover {
+    transform: translateY(-1px);
+    opacity: 0.9;
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const calendarioEl = document.getElementById('calendario');
+    
+    if (calendarioEl) {
+      const colors = {
+        'OK': '#22c55e',
+        'Manutenção Próxima': '#f59e0b',
+        'Precisa de Manutenção': '#ef4444',
+        'Sem Registro de Manutenção': '#6b7280'
+      };
+
+      // Preparando os eventos a partir do dashboardData
+      const events = (dashboardData.eventos_calendario || []).map(e => {
+        return {
+          id: e.id,
+          title: `${e.title} (${e.setor})`,
+          start: e.start,
+          allDay: true, // Manutenções não têm hora específica neste modelo
+          backgroundColor: colors[e.status] || '#3b82f6',
+          borderColor: colors[e.status] || '#3b82f6',
+          extendedProps: {
+            status: e.status,
+            setor: e.setor
+          }
+        };
+      });
+
+      const calendar = new FullCalendar.Calendar(calendarioEl, {
+        initialView: 'dayGridMonth',
+        locale: 'pt-br',
+        height: 380,
+        contentHeight: 330,
+        headerToolbar: {
+          left: 'prev,next today',
+          center: 'title',
+          right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        buttonText: {
+          today: 'Hoje',
+          month: 'Mês',
+          week: 'Semana',
+          day: 'Dia'
+        },
+        events: events,
+        eventClick: function(info) {
+          window.location.href = `/maquinas/${info.event.id}`;
+        },
+        eventDidMount: function(info) {
+           info.el.setAttribute('aria-label', `${info.event.title} - ${info.event.extendedProps.status}`);
+        }
+      });
+
+      calendar.render();
+      
+      // Ajuste de tamanho caso seja renderizado muito rápido
+      setTimeout(() => calendar.updateSize(), 150);
+    }
+  });
+</script>

@@ -1,0 +1,123 @@
+# routers/setores.py — CRUD de Setores via HTML + HTMX
+from fastapi import APIRouter, Request, Form, HTTPException
+from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.templating import Jinja2Templates
+from typing import Optional
+
+from crud import listar_setores, buscar_setor, criar_setor, atualizar_setor, deletar_setor
+from crud import listar_maquinas
+from models.setor import SetorCreate, SetorUpdate
+
+router = APIRouter(prefix="/setores", tags=["Setores"])
+templates = Jinja2Templates(directory="templates")
+
+
+@router.get("/",
+        name="listar_setores")
+async def pg_listar_setores(request: Request):
+    setores = listar_setores()
+    maquinas = listar_maquinas()
+
+    # Contagem de máquinas por setor
+    contagem = {}
+    for m in maquinas:
+        contagem[m.setor_id] = contagem.get(m.setor_id, 0) + 1
+
+    return templates.TemplateResponse(request=request,
+        name="setores/lista.html",
+        context={
+        "request": request,
+        "setores": setores,
+        "contagem_maquinas": contagem,
+    })
+
+
+@router.get("/novo",
+        name="form_novo_setor")
+async def pg_form_novo(request: Request):
+    return templates.TemplateResponse(request=request,
+        name="setores/form.html",
+        context={
+        "request": request,
+        "setor": None,
+        "titulo": "Novo Setor",
+    })
+
+
+@router.post("/novo",
+        name="criar_setor_post")
+async def pg_criar_setor(
+    request: Request,
+    nome: str = Form(...),
+    descricao: Optional[str] = Form(None),
+    intervalo_manutencao_dias: int = Form(90),
+):
+    try:
+        payload = SetorCreate(
+            nome=nome,
+            descricao=descricao or None,
+            intervalo_manutencao_dias=intervalo_manutencao_dias,
+        )
+        criar_setor(payload)
+        return RedirectResponse(url="/setores/",
+        status_code=303)
+    except ValueError as e:
+        return templates.TemplateResponse(request=request,
+        name="setores/form.html",
+        context={
+            "request": request,
+            "setor": None,
+            "titulo": "Novo Setor",
+            "erro": str(e),
+        })
+
+
+@router.get("/{setor_id}/editar",
+        name="form_editar_setor")
+async def pg_form_editar(request: Request, setor_id: str):
+    setor = buscar_setor(setor_id)
+    if not setor:
+        raise HTTPException(status_code=404, detail="Setor não encontrado")
+    return templates.TemplateResponse(request=request,
+        name="setores/form.html",
+        context={
+        "request": request,
+        "setor": setor,
+        "titulo": "Editar Setor",
+    })
+
+
+@router.post("/{setor_id}/editar",
+        name="editar_setor_post")
+async def pg_editar_setor(
+    request: Request,
+    setor_id: str,
+    nome: str = Form(...),
+    descricao: Optional[str] = Form(None),
+    intervalo_manutencao_dias: int = Form(90),
+):
+    payload = SetorUpdate(
+        nome=nome,
+        descricao=descricao or None,
+        intervalo_manutencao_dias=intervalo_manutencao_dias,
+    )
+    resultado = atualizar_setor(setor_id, payload)
+    if not resultado:
+        raise HTTPException(status_code=404, detail="Setor não encontrado")
+    return RedirectResponse(url="/setores/",
+        status_code=303)
+
+
+@router.post("/{setor_id}/deletar",
+        name="deletar_setor_post")
+async def pg_deletar_setor(setor_id: str):
+    # Verifica se há máquinas no setor antes de deletar
+    maquinas = listar_maquinas(setor_id=setor_id)
+    if maquinas:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Setor possui {len(maquinas)} máquina(s). Remova-as antes de deletar o setor."
+        )
+    deletar_setor(setor_id)
+    return RedirectResponse(url="/setores/",
+        status_code=303)

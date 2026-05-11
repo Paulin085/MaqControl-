@@ -1,0 +1,128 @@
+# routers/dashboard.py — Rota principal / dashboard
+from fastapi import APIRouter, Request
+from fastapi.templating import Jinja2Templates
+from datetime import date
+
+from crud import listar_maquinas, listar_setores
+from models.maquina import StatusMaquina
+
+# Todos os status possíveis na ordem exibida no heatmap
+_TODOS_OS_STATUS = [
+    StatusMaquina.OK.value,
+    StatusMaquina.MANUTENCAO_PROXIMA.value,
+    StatusMaquina.PRECISA_MANUTENCAO.value,
+    StatusMaquina.SEM_MANUTENCAO.value,
+]
+
+router = APIRouter()
+templates = Jinja2Templates(directory="templates")
+
+
+def _resumo_dashboard():
+    """Monta os dados consolidados para o dashboard."""
+    maquinas = listar_maquinas()
+    setores  = listar_setores()
+
+    total = len(maquinas)
+
+    # Contagem por status
+    contagem_status = {s.value: 0 for s in StatusMaquina}
+    for m in maquinas:
+        contagem_status[m.status.value] += 1
+
+    # Distribuição por setor (gráfico pizza existente)
+    setor_map = {s.id: s.nome for s in setores}
+    dist_setores = {}
+    for m in maquinas:
+        nome_setor = setor_map.get(m.setor_id, "Sem Setor")
+        dist_setores[nome_setor] = dist_setores.get(nome_setor, 0) + 1
+
+    # Heatmap: distribuição por setor × status (todos setores e todos status garantidos com 0)
+    setores_status = {}
+    for setor in setores:
+        setores_status[setor.nome] = {s: 0 for s in _TODOS_OS_STATUS}
+    # Inclui máquinas sem setor definido no sistema
+    if any(setor_map.get(m.setor_id) is None for m in maquinas):
+        setores_status.setdefault("Sem Setor", {s: 0 for s in _TODOS_OS_STATUS})
+    for m in maquinas:
+        nome_setor = setor_map.get(m.setor_id, "Sem Setor")
+        if nome_setor not in setores_status:
+            setores_status[nome_setor] = {s: 0 for s in _TODOS_OS_STATUS}
+        setores_status[nome_setor][m.status.value] += 1
+
+    # Calendário: eventos de máquinas com próxima manutenção a partir de hoje
+    hoje = date.today()
+    eventos_calendario = []
+    for m in maquinas:
+        if m.proxima_manutencao and m.proxima_manutencao >= hoje:
+            nome_setor = setor_map.get(m.setor_id, "Sem Setor")
+            eventos_calendario.append({
+                "title": m.nome,
+                "start": m.proxima_manutencao.isoformat(),
+                "status": m.status.value,
+                "setor": nome_setor,
+                "id": m.id,
+            })
+    # Ordena por data para facilitar a leitura
+    eventos_calendario.sort(key=lambda e: e["start"])
+
+    # Máquinas que precisam de atenção (ordenadas por urgência)
+    atencao = [
+        m for m in maquinas
+        if m.status in (StatusMaquina.PRECISA_MANUTENCAO, StatusMaquina.MANUTENCAO_PROXIMA)
+    ]
+    atencao.sort(key=lambda m: (
+        0 if m.status == StatusMaquina.PRECISA_MANUTENCAO else 1,
+        m.proxima_manutencao or date.max
+    ))
+
+    # KPI de Saúde do Hardware (Defasagem)
+    saude_hardware = {
+        "Moderna": 0,
+        "Fraca": 0,
+        "Obsoleta": 0,
+        "Dados Insuficientes": 0
+    }
+    for m in maquinas:
+        ram_str = (m.memoria_ram or "").upper()
+        disco_str = (m.armazenamento_tipo or "").upper()
+        proc_str = (m.processador or "").upper()
+
+        if not ram_str and not disco_str and not proc_str:
+            saude_hardware["Dados Insuficientes"] += 1
+            continue
+
+        # 1. Obsoleta: Se o disco principal for HD (independente do resto)
+        if "HD" in disco_str and "SSD" not in disco_str:
+            saude_hardware["Obsoleta"] += 1
+        # 2. Fraca: Se RAM for baixa (2GB ou 4GB) ou processador for de entrada (Celeron/Pentium)
+        elif any(x in ram_str for x in ["2GB", "4GB"]) or any(x in proc_str for x in ["CELERON", "PENTIUM"]):
+            saude_hardware["Fraca"] += 1
+        # 3. Moderna: Se tiver SSD (e passou nos filtros acima, supõe-se RAM >= 8GB e Processador melhor)
+        elif "SSD" in disco_str:
+            saude_hardware["Moderna"] += 1
+        # 4. Fallback: Se tiver dados mas não for SSD (ex: campos preenchidos mas incertos)
+        else:
+            saude_hardware["Fraca"] += 1
+
+    return {
+        "total_maquinas": total,
+        "contagem_status": contagem_status,
+        "dist_setores": dist_setores,
+        "setores_status": setores_status,
+        "saude_hardware": saude_hardware,
+        "eventos_calendario": eventos_calendario,
+        "setor_nome_para_id": {s.nome: s.id for s in setores},
+        "maquinas_atencao": atencao[:10],  # Top 10
+        "setores": setores,
+        "total_setores": len(setores),
+    }
+
+
+@router.get("/", name="dashboard")
+async def dashboard(request: Request):
+    dados = _resumo_dashboard()
+    return templates.TemplateResponse(
+        "dashboard.html",
+        {"request": request, **dados}
+    )

@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}Registrar Manutenção — MaqControl{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto fade-up">
+  <div class="flex items-center gap-4 mb-6">
+    <a href="/" class="text-slate-400 hover:text-white transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+    </a>
+    <div>
+      <h1 class="text-2xl font-bold text-white">Registrar Manutenção</h1>
+      <p class="text-slate-400 text-sm">Selecione a máquina e preencha os detalhes</p>
+    </div>
+  </div>
+
+  {% if erro %}
+  <div class="mb-4 px-4 py-3 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 text-sm">⚠ {{ erro }}</div>
+  {% endif %}
+
+  <form method="post" class="glass rounded-2xl p-6 space-y-5">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
+        <label class="text-xs text-slate-400 mb-1 block">Filtrar por Setor</label>
+        <select id="filtro_setor" class="input-glass">
+          <option value="">Todos os setores</option>
+          {% for s in setores %}
+          <option value="{{ s.id }}">{{ s.nome }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="text-xs text-slate-400 mb-1 block">Máquina *</label>
+        <select name="maquina_id" id="select_maquina" required class="input-glass">
+          <option value="">Selecione uma máquina</option>
+          {% for m in maquinas %}
+          <option value="{{ m.id }}" data-setor="{{ m.setor_id }}">{{ m.nome }} ({{ m.ip or "Sem IP" }})</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div>
+      <label class="text-xs text-slate-400 mb-1 block">Tipo de Manutenção</label>
+      <select name="tipo" class="input-glass">
+        {% for t in tipos %}
+        <option value="{{ t }}">{{ t }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div>
+      <label class="text-xs text-slate-400 mb-1 block">Data da Manutenção *</label>
+      <input type="date" name="data_manutencao" required value="{{ hoje }}" class="input-glass"/>
+    </div>
+    <div>
+      <label class="text-xs text-slate-400 mb-1 block">Responsável *</label>
+      <input type="text" name="responsavel" required placeholder="Nome do técnico responsável" class="input-glass"/>
+    </div>
+    <div>
+      <label class="text-xs text-slate-400 mb-1 block">Descrição *</label>
+      <textarea name="descricao" required rows="3" placeholder="O que foi feito…" class="input-glass resize-none"></textarea>
+    </div>
+    <div>
+      <label class="text-xs text-slate-400 mb-1 block">Observações</label>
+      <textarea name="observacoes" rows="2" placeholder="Observações adicionais…" class="input-glass resize-none"></textarea>
+    </div>
+    <div class="flex gap-3 pt-2">
+      <button type="submit" class="btn-primary">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+        Salvar Manutenção
+      </button>
+      <a href="/" class="btn-secondary">Cancelar</a>
+    </div>
+  </form>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const filtroSetor = document.getElementById('filtro_setor');
+    const selectMaquina = document.getElementById('select_maquina');
+    
+    if (filtroSetor && selectMaquina) {
+      const optSelecionar = selectMaquina.querySelector('option[value=""]');
+      // Guarda todas as opções com data-setor com Array de clones para remontagem limpa
+      const todasOpcoes = Array.from(selectMaquina.querySelectorAll('option[data-setor]'));
+
+      filtroSetor.addEventListener('change', (e) => {
+        const setorId = e.target.value;
+        
+        // Limpa tudo e adiciona a opção default de volta
+        selectMaquina.innerHTML = '';
+        selectMaquina.appendChild(optSelecionar);
+
+        // Adiciona de volta aquelas que dão match no filtro de setor
+        todasOpcoes.forEach(opt => {
+          if (!setorId || opt.dataset.setor === setorId) {
+            selectMaquina.appendChild(opt);
+          }
+        });
+      });
+    }
+  });
+</script>
+{% endblock %}

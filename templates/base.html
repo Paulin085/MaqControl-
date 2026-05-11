@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}MaqControl{% endblock %}</title>
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- HTMX -->
+  <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+
+  <!-- Chart.js para gráficos do dashboard -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
+  <!-- Google Fonts: Sora + Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Inter:wght@300;400;500&display=swap"
+    rel="stylesheet" />
+
+  <script>
+    // Configuração Tailwind customizada
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Sora', 'sans-serif'], body: ['Inter', 'sans-serif'] },
+          colors: {
+            verde: {
+              50: '#f0fdf4', 100: '#dcfce7', 200: '#bbf7d0',
+              300: '#86efac', 400: '#4ade80', 500: '#22c55e',
+              600: '#16a34a', 700: '#15803d', 800: '#166534',
+              900: '#14532d', 950: '#052e16',
+            }
+          },
+          backdropBlur: { xs: '2px' },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* ── Variáveis de tema ── */
+    :root {
+      --glass-bg: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.15);
+      --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      --sidebar-w: 260px;
+      --sidebar-collapsed-w: 80px;
+    }
+
+    .light {
+      --glass-bg: rgba(255, 255, 255, 0.55);
+      --glass-border: rgba(255, 255, 255, 0.7);
+      --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    }
+
+    /* ── Fundo animado com gradiente verde ── */
+    body {
+      font-family: 'Sora', sans-serif;
+      min-height: 100vh;
+      background: #0a1a0f;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    .light body,
+    body.light-bg {
+      background: #e8f5ee;
+    }
+
+    #bg-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ── Glassmorphism ── */
+    .glass {
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px) saturate(180%);
+      -webkit-backdrop-filter: blur(16px) saturate(180%);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
+    }
+
+    .glass-strong {
+      background: rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(24px) saturate(200%);
+      -webkit-backdrop-filter: blur(24px) saturate(200%);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    }
+
+    /* ── Sidebar ── */
+    #sidebar {
+      width: var(--sidebar-w);
+      transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease;
+      position: relative;
+    }
+
+    #sidebar.collapsed {
+      width: var(--sidebar-collapsed-w);
+      padding-left: 0.75rem;
+      padding-right: 0.75rem;
+    }
+
+    #sidebar.collapsed .sidebar-text,
+    #sidebar.collapsed .sidebar-header-text,
+    #sidebar.collapsed .sidebar-sectors {
+      display: none;
+    }
+
+    #sidebar.collapsed .sidebar-nav-item {
+      justify-content: center;
+      padding-left: 0;
+      padding-right: 0;
+    }
+
+    #sidebar.collapsed .sidebar-logo-container {
+      justify-content: center;
+      padding: 0;
+    }
+
+    #sidebar.collapsed #theme-toggle {
+      justify-content: center;
+      padding: 10px 0;
+    }
+
+    #sidebar.collapsed #theme-label {
+      display: none;
+    }
+
+    /* Botão de Toggle */
+    #sidebar-toggle {
+      transition: transform 0.3s ease;
+    }
+
+    #sidebar.collapsed #sidebar-toggle {
+      transform: rotate(180deg);
+    }
+
+    @media (max-width: 768px) {
+      #sidebar {
+        transform: translateX(-100%);
+        position: fixed;
+        z-index: 50;
+      }
+
+      #sidebar.open {
+        transform: translateX(0) !important;
+      }
+
+      /* Removendo qualquer overlay residual que possa estar travando a tela */
+      #sidebar-overlay {
+        display: none !important;
+      }
+    }
+
+    /* ── Cards de status ── */
+    .status-ok {
+      border-left: 4px solid #22c55e;
+    }
+
+    .status-proxima {
+      border-left: 4px solid #f59e0b;
+    }
+
+    .status-precisa {
+      border-left: 4px solid #ef4444;
+    }
+
+    .status-sem-registro {
+      border-left: 4px solid #6b7280;
+    }
+
+    /* ── Badge de status ── */
+    .badge-ok {
+      background: rgba(34, 197, 94, 0.2);
+      color: #86efac;
+      border: 1px solid rgba(34, 197, 94, 0.4);
+    }
+
+    .badge-proxima {
+      background: rgba(245, 158, 11, 0.2);
+      color: #fcd34d;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+    }
+
+    .badge-precisa {
+      background: rgba(239, 68, 68, 0.2);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+    }
+
+    .badge-sem-registro {
+      background: rgba(107, 114, 128, 0.2);
+      color: #d1d5db;
+      border: 1px solid rgba(107, 114, 128, 0.4);
+    }
+
+    /* ── Inputs ── */
+    .input-glass {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #f1f5f9;
+      border-radius: 10px;
+      padding: 0.55rem 0.9rem;
+      width: 100%;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+
+    .input-glass:focus {
+      border-color: #22c55e;
+      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+    }
+
+    .input-glass::placeholder {
+      color: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Estilização das opções do select (que herdam o fundo branco padrão em alguns navegadores) */
+    .input-glass option {
+      background-color: #143524; /* Fundo verde escuro para casar com o tema */
+      color: #f1f5f9;
+    }
+
+    /* ── Botões ── */
+    .btn-primary {
+      background: linear-gradient(135deg, #16a34a, #22c55e);
+      color: #fff;
+      padding: 0.55rem 1.4rem;
+      border-radius: 10px;
+      font-weight: 600;
+      transition: opacity 0.2s, transform 0.1s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-primary:hover {
+      opacity: 0.9;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #d1fae5;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 0.55rem 1.4rem;
+      border-radius: 10px;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.18);
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.15);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      padding: 0.45rem 1rem;
+      border-radius: 8px;
+      font-weight: 500;
+      transition: background 0.2s;
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.3);
+    }
+
+    /* ── Animações de entrada ── */
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(18px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .fade-up {
+      animation: fadeUp 0.4s ease forwards;
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(34, 197, 94, 0.3);
+      border-radius: 3px;
+    }
+
+    /* ── Light mode overrides ── */
+    html.light .input-glass {
+      background: rgba(255, 255, 255, 0.6);
+      border-color: rgba(0, 0, 0, 0.15);
+      color: #1a2e1a;
+    }
+
+    html.light .input-glass::placeholder {
+      color: rgba(0, 0, 0, 0.35);
+    }
+
+    html.light .badge-ok {
+      color: #166534;
+    }
+
+    html.light .badge-proxima {
+      color: #92400e;
+    }
+
+    html.light .badge-precisa {
+      color: #991b1b;
+    }
+
+    /* Estilização das opções do select no modo claro */
+    html.light .input-glass option {
+      background-color: #e8f5ee; /* Fundo claro do body */
+      color: #1a2e1a;
+    }
+  </style>
+
+  {% block extra_head %}{% endblock %}
+</head>
+
+<body class="h-full text-slate-100 dark">
+
+  <!-- Fundo animado -->
+  <canvas id="bg-canvas"></canvas>
+
+  <div class="relative z-10 flex h-screen overflow-hidden">
+
+    <!-- ── SIDEBAR ── -->
+    <aside id="sidebar" class="glass flex flex-col h-full shrink-0 py-6 px-4 overflow-y-auto relative transition-all duration-300">
+      <!-- Logo -->
+      <a href="/" class="flex items-center gap-3 mb-8 px-2 sidebar-logo-container hover:opacity-80 transition-opacity">
+        <img src="/static/empresa.png" alt="Logo Empresa"
+          class="w-30 h-30 shrink-0 rounded-xl object-contain shadow-lg bg-white/5 p-1">
+        <div class="sidebar-header-text overflow-hidden whitespace-nowrap">
+          <p class="font-bold text-verde-400 text-base leading-tight">MaqControl</p>
+          <p class="text-xs text-slate-400">Gestão de Máquinas</p>
+        </div>
+      </a>
+
+      <!-- Navegação principal -->
+      <nav class="flex-1 space-y-1">
+        {% set nav = [
+        ("/", "Dashboard", "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0
+        001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"),
+        ("/maquinas/", "Máquinas", "M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0
+        01-2-2V9m0 0h18"),
+        ("/setores/", "Setores", "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1
+        4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"),
+        ("/relatorios/", "Relatórios", "M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0
+        01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"),
+         ("/chamados/", "Chamados", "M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0V12a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 12V5.25"),
+         ] %}
+        {% for href, label, icon_path in nav %}
+        <a href="{{ href }}" title="{{ label }}" class="sidebar-nav-item flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all
+                  {% if request.url.path == href or (href != '/' and request.url.path.startswith(href)) %}
+                    bg-verde-600/30 text-verde-300 border border-verde-500/30
+                  {% else %}
+                    text-slate-300 hover:bg-white/10 hover:text-white
+                  {% endif %}">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24"
+            stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="{{ icon_path }}" />
+          </svg>
+          <span class="sidebar-text whitespace-nowrap overflow-hidden transition-opacity duration-200">{{ label
+            }}</span>
+        </a>
+        {% endfor %}
+      </nav>
+
+      <!-- Setores no sidebar -->
+      {% if setores is defined and setores %}
+      <div class="mt-6 sidebar-sectors">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider px-3 mb-2">Setores</p>
+        {% for s in setores[:8] %}
+        <a href="/maquinas/?setor_id={{ s.id }}"
+          class="flex items-center justify-between px-3 py-1.5 rounded-lg text-xs text-slate-400 hover:text-verde-300 hover:bg-white/5 transition-all">
+          <span>{{ s.nome }}</span>
+        </a>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- Rodapé sidebar -->
+      <div class="mt-auto pt-4 border-t border-white/10">
+        <div class="flex items-center gap-2">
+          <button id="theme-toggle" onclick="toggleTheme()" title="Alterar Tema"
+            class="flex items-center justify-center p-2.5 rounded-xl text-slate-300 hover:bg-white/10 hover:text-white transition-all shrink-0">
+            <svg id="icon-moon" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+            </svg>
+            <svg id="icon-sun" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 hidden" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+          </button>
+
+          <!-- Novo botão de retrair no rodapé -->
+          <button id="sidebar-toggle" onclick="toggleSidebar()" title="Recolher Menu"
+            class="flex items-center justify-center p-2.5 rounded-xl text-slate-300 hover:bg-white/10 hover:text-white transition-all shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+
+          <!-- Botão de Sair -->
+          <a href="/logout" title="Sair do Sistema"
+            class="flex items-center justify-center p-2.5 rounded-xl text-red-500/80 hover:bg-red-500/20 hover:text-red-400 transition-all shrink-0 ml-auto">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+          </a>
+
+        </div>
+      </div>
+    </aside>
+
+    <!-- ── CONTEÚDO PRINCIPAL ── -->
+    <main class="flex-1 overflow-y-auto">
+
+      <!-- Topbar mobile -->
+      <div class="md:hidden flex items-center justify-between glass px-4 py-3 sticky top-0 z-20">
+        <button onclick="openSidebar()"
+          class="p-2 rounded-lg hover:bg-white/10 text-slate-300">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+        <span class="font-bold text-verde-400">MaqControl</span>
+        <div class="w-8"></div>
+      </div>
+
+      <!-- Conteúdo da página -->
+      <div class="p-6 md:p-8">
+        {% block content %}{% endblock %}
+      </div>
+    </main>
+  </div>
+
+  <!-- ── Scripts globais ── -->
+  <script>
+      // ── Fundo animado com bolhas verdes ──────────────────────────────────────
+      (function () {
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let blobs = [];
+        const DARK_BG = '#0a1a0f', LIGHT_BG = '#e8f5ee';
+
+        function resize() {
+          canvas.width = window.innerWidth;
+          canvas.height = window.innerHeight;
+        }
+
+        function initBlobs() {
+          blobs = Array.from({ length: 6 }, () => ({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            r: 200 + Math.random() * 300,
+            vx: (Math.random() - 0.5) * 0.4,
+            vy: (Math.random() - 0.5) * 0.4,
+            color: ['#16a34a', '#15803d', '#166534', '#14532d', '#052e16', '#22c55e'][Math.floor(Math.random() * 6)],
+            opacity: 0.12 + Math.random() * 0.12,
+          }));
+        }
+
+        function draw() {
+          const isLight = document.documentElement.classList.contains('light');
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = isLight ? LIGHT_BG : DARK_BG;
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+          blobs.forEach(b => {
+            const grd = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r);
+            grd.addColorStop(0, b.color + Math.floor(b.opacity * 255).toString(16).padStart(2, '0'));
+            grd.addColorStop(1, 'transparent');
+            ctx.beginPath();
+            ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+            ctx.fillStyle = grd;
+            ctx.fill();
+
+            b.x += b.vx; b.y += b.vy;
+            if (b.x < -b.r) b.x = canvas.width + b.r;
+            if (b.x > canvas.width + b.r) b.x = -b.r;
+            if (b.y < -b.r) b.y = canvas.height + b.r;
+            if (b.y > canvas.height + b.r) b.y = -b.r;
+          });
+          requestAnimationFrame(draw);
+        }
+
+        window.addEventListener('resize', resize);
+        resize(); initBlobs(); draw();
+      })();
+
+    // ── Alternância de tema ───────────────────────────────────────────────────
+    function toggleTheme() {
+      const html = document.documentElement;
+      const isLight = html.classList.toggle('light');
+      localStorage.setItem('maqcontrol-theme', isLight ? 'light' : 'dark');
+      document.getElementById('icon-moon').classList.toggle('hidden', isLight);
+      document.getElementById('icon-sun').classList.toggle('hidden', !isLight);
+    }
+
+    // ── Sidebar Toggle ────────────────────────────────────────────────────────
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const isCollapsed = sidebar.classList.toggle('collapsed');
+      localStorage.setItem('maqcontrol-sidebar-collapsed', isCollapsed);
+    }
+
+    // Open sidebar (mobile)
+    function openSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.add('open');
+    }
+
+    // Close sidebar
+    function closeSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.remove('open');
+    }
+
+    // Close sidebar when clicking outside
+    function closeSidebarOnClickOutside(event) {
+      const sidebar = document.getElementById('sidebar');
+      if (sidebar.classList.contains('open') && !sidebar.contains(event.target) && !event.target.closest('button[onclick="openSidebar()"]')) {
+        closeSidebar();
+      }
+    }
+
+    document.addEventListener('click', closeSidebarOnClickOutside);
+
+    // Aplica tema e sidebar salvos
+    (function () {
+      const savedTheme = localStorage.getItem('maqcontrol-theme');
+      if (savedTheme === 'light') {
+        document.documentElement.classList.add('light');
+        document.getElementById('icon-moon').classList.add('hidden');
+        document.getElementById('icon-sun').classList.remove('hidden');
+      }
+
+      const savedSidebar = localStorage.getItem('maqcontrol-sidebar-collapsed');
+      if (savedSidebar === 'true') {
+        document.getElementById('sidebar').classList.add('collapsed');
+      }
+    })();
+  </script>
+
+  {% block extra_scripts %}{% endblock %}
+</body>
+
+</html>

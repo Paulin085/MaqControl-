@@ -1,0 +1,100 @@
+# fix_templates.py
+import re
+from pathlib import Path
+from typing import List
+
+def fix_template_response(content: str) -> str:
+    """Corrige todas as chamadas de TemplateResponse para Starlette 1.0+"""
+    original = content
+
+    # Remove comentários problemáticos que causam erro de sintaxe
+    content = re.sub(r',\s*request=request\s*#\s*←.*', ',', content)
+
+    # Padrão 1: Formato antigo mais comum
+    # TemplateResponse("nome.html", {"request": request})
+    pattern1 = re.compile(
+        r'TemplateResponse\(\s*["\']([^"\']+)["\']\s*,\s*(\{.*?"request".*?\})',
+        re.DOTALL | re.VERBOSE
+    )
+    content = pattern1.sub(
+        r'TemplateResponse(\n        request=request,\n        name="\1",\n        context=\2',
+        content
+    )
+
+    # Padrão 2: Com status_code
+    pattern2 = re.compile(
+        r'TemplateResponse\(\s*["\']([^"\']+)["\']\s*,\s*(\{.*?"request".*?\})\s*(,\s*status_code=\d+)?',
+        re.DOTALL
+    )
+    content = pattern2.sub(
+        lambda m: f'TemplateResponse(\n        request=request,\n        name="{m.group(1)}",\n        context={m.group(2)}{m.group(3) or ""}',
+        content
+    )
+
+    # Padrão 3: Já tem request= duplicado (causa SyntaxError)
+    content = re.sub(
+        r'TemplateResponse\(\s*request=request,?\s*request=request',
+        r'TemplateResponse(request=request',
+        content
+    )
+
+    # Padrão 4: Formato com name e context já existente mas bagunçado
+    content = re.sub(
+        r'TemplateResponse\(\s*name=.*?,?\s*request=request',
+        r'TemplateResponse(request=request,',
+        content
+    )
+
+    # Garante que o request fique sempre como primeiro argumento
+    content = re.sub(
+        r'TemplateResponse\(\s*(?!request=request)',
+        r'TemplateResponse(\n        request=request,',
+        content
+    )
+
+    if content != original:
+        # Formata melhor (indentação)
+        content = re.sub(r',\s*name=', ',\n        name=', content)
+        content = re.sub(r',\s*context=', ',\n        context=', content)
+        content = re.sub(r',\s*status_code=', ',\n        status_code=', content)
+
+    return content
+
+
+def main():
+    project_root = Path.cwd()  # Usa o diretório atual
+    
+    print("🔧 Iniciando correção avançada de TemplateResponse (Starlette 1.0)\n")
+    
+    files_fixed = 0
+    for py_file in project_root.rglob("*.py"):
+        if any(ex in str(py_file) for ex in ['.venv', 'venv', 'env', '__pycache__', 'migrations', 'alembic']):
+            continue
+            
+        try:
+            with open(py_file, 'r', encoding='utf-8') as f:
+                original_content = f.read()
+            
+            new_content = fix_template_response(original_content)
+            
+            if new_content != original_content:
+                # Faz backup
+                backup_file = py_file.with_suffix('.py.bak')
+                with open(backup_file, 'w', encoding='utf-8') as f:
+                    f.write(original_content)
+                
+                with open(py_file, 'w', encoding='utf-8') as f:
+                    f.write(new_content)
+                
+                print(f"✅ Corrigido: {py_file.name}")
+                files_fixed += 1
+                
+        except Exception as e:
+            print(f"❌ Erro ao processar {py_file.name}: {e}")
+
+    print(f"\n🎉 Concluído! {files_fixed} arquivo(s) corrigido(s).")
+    print("   Backups foram criados com extensão .bak")
+
+
+if __name__ == "__main__":
+    main()

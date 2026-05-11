@@ -1,0 +1,110 @@
+<div class="glass rounded-2xl p-5 fade-up" style="animation-delay:.4s">
+  <h2 class="text-sm font-semibold text-slate-300 mb-4">Distribuição por Setor e Status</h2>
+  <div class="w-full relative" style="height: 360px;">
+    <canvas id="chart-heatmap"></canvas>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Garantir que dashboardData esteja disponível (definido no dashboard.html)
+    if (typeof dashboardData === 'undefined' || !dashboardData.setores_status) return;
+
+    const data = dashboardData.setores_status;
+    const labels = Object.keys(data);
+    
+    // Se não há setores preenchidos
+    if (labels.length === 0) {
+      document.querySelector('#chart-heatmap').parentElement.innerHTML = 
+        '<p class="text-center text-slate-500 text-sm mt-4">Nenhuma máquina cadastrada</p>';
+      return;
+    }
+
+    const TODOS_OS_STATUS = [
+      'OK',
+      'Manutenção Próxima',
+      'Precisa de Manutenção',
+      'Sem Registro de Manutenção'
+    ];
+    
+    // Cores padronizadas com o resto do sistema
+    const colors = {
+      'OK': '#22c55e',
+      'Manutenção Próxima': '#f59e0b',
+      'Precisa de Manutenção': '#ef4444',
+      'Sem Registro de Manutenção': '#6b7280'
+    };
+
+    const isLight = document.documentElement.classList.contains('light');
+    const textColor = isLight ? '#1a2e1a' : '#cbd5e1';
+    const gridColor = isLight ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.08)';
+
+    const datasets = TODOS_OS_STATUS.map(status => {
+      return {
+        label: status,
+        data: labels.map(setor => data[setor][status]),
+        backgroundColor: colors[status],
+        borderRadius: 4,
+        borderWidth: 0,
+      };
+    });
+
+    const ctx = document.getElementById('chart-heatmap');
+    if (ctx) {
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: datasets
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { 
+              stacked: true,
+              ticks: { color: textColor, font: { family: 'Sora', size: 10 } },
+              grid: { color: gridColor }
+            },
+            y: { 
+              stacked: true,
+              ticks: { color: textColor, font: { family: 'Sora', size: 10 }, stepSize: 1 },
+              grid: { color: gridColor },
+              beginAtZero: true
+            }
+          },
+          plugins: {
+            legend: {
+              labels: { color: textColor, font: { family: 'Sora', size: 11 } }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return ` ${context.dataset.label}: ${context.raw}`;
+                }
+              }
+            }
+          },
+          onHover: (evt, activeElements) => {
+            evt.native.target.style.cursor = activeElements.length ? 'pointer' : 'default';
+          },
+          onClick: (evt, activeElements, chart) => {
+            if (activeElements.length > 0) {
+              const datasetIndex = activeElements[0].datasetIndex;
+              const dataIndex = activeElements[0].index;
+              const clickedSetor = chart.data.labels[dataIndex];
+              const clickedStatus = chart.data.datasets[datasetIndex].label;
+              
+              const setorId = dashboardData.setor_nome_para_id[clickedSetor];
+              let url = `/maquinas/?status=${encodeURIComponent(clickedStatus)}`;
+              if (setorId) {
+                  url += `&setor_id=${setorId}`;
+              }
+              window.location.href = url;
+            }
+          }
+        }
+      });
+    }
+  });
+</script>

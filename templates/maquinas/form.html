@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}{{ titulo }} — MaqControl{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto fade-up">
+  <!-- Cabeçalho -->
+  <div class="flex items-center gap-4 mb-6">
+    <a href="/maquinas/" class="text-slate-400 hover:text-white transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+    </a>
+    <div>
+      <h1 class="text-2xl font-bold text-white">{{ titulo }}</h1>
+      <p class="text-slate-400 text-sm">Preencha os dados da máquina abaixo</p>
+    </div>
+  </div>
+
+  {% if erro %}
+  <div class="mb-4 px-4 py-3 rounded-xl bg-red-500/15 border border-red-500/30 text-red-300 text-sm">⚠ {{ erro }}</div>
+  {% endif %}
+
+  <form method="post" class="glass rounded-2xl p-6 space-y-5">
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <!-- Nome -->
+      <div class="md:col-span-2">
+        <label class="text-xs text-slate-400 mb-1 block">Nome / Hostname *</label>
+        <input type="text" name="nome" required value="{{ maquina.nome if maquina else '' }}" placeholder="Ex: PC-ADM-01" class="input-glass"/>
+      </div>
+
+      <!-- Tipo -->
+      <div>
+        <label class="text-xs text-slate-400 mb-1 block">Tipo *</label>
+        <select name="tipo" required class="input-glass">
+          {% for t in tipos %}
+          <option value="{{ t }}" {% if maquina and maquina.tipo.value == t %}selected{% endif %}>{{ t }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Setor -->
+      <div>
+        <label class="text-xs text-slate-400 mb-1 block">Setor *</label>
+        <select name="setor_id" required class="input-glass">
+          <option value="">Selecione um setor…</option>
+          {% for s in setores %}
+          <option value="{{ s.id }}" {% if maquina and maquina.setor_id == s.id %}selected{% endif %}>{{ s.nome }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- IP -->
+      <div>
+        <label class="text-xs text-slate-400 mb-1 block">Endereço IP</label>
+        <input type="text" name="ip" value="{{ maquina.ip or '' if maquina else '' }}" placeholder="192.168.1.100" class="input-glass font-mono"/>
+      </div>
+
+      <!-- AnyDesk -->
+      <div>
+        <label class="text-xs text-slate-400 mb-1 block">AnyDesk ID</label>
+        <input type="text" name="anydesk" value="{{ maquina.anydesk or '' if maquina else '' }}" placeholder="123 456 789" class="input-glass font-mono"/>
+      </div>
+
+      <!-- Processador -->
+      <div class="md:col-span-2">
+        <label class="text-xs text-slate-400 mb-1 block">Processador</label>
+        <input type="text" name="processador" value="{{ maquina.processador or '' if maquina else '' }}" placeholder="Ex: Intel Core i5-10400 2.90GHz" class="input-glass"/>
+      </div>
+
+      <!-- Memória RAM -->
+      <div>
+        <label class="text-xs text-slate-400 mb-1 block">Memória RAM</label>
+        <input type="text" name="memoria_ram" value="{{ maquina.memoria_ram or '' if maquina else '' }}" placeholder="Ex: 8GB DDR4" class="input-glass"/>
+      </div>
+
+      <!-- Armazenamento tipo -->
+      <div>
+        <label class="text-xs text-slate-400 mb-1 block">Tipo de Armazenamento</label>
+        <select name="armazenamento_tipo" class="input-glass">
+          <option value="">—</option>
+          <option value="HDD" {% if maquina and maquina.armazenamento_tipo == "HDD" %}selected{% endif %}>HDD</option>
+          <option value="SSD" {% if maquina and maquina.armazenamento_tipo == "SSD" %}selected{% endif %}>SSD</option>
+        </select>
+      </div>
+
+      <!-- Armazenamento capacidade -->
+      <div>
+        <label class="text-xs text-slate-400 mb-1 block">Capacidade de Armazenamento</label>
+        <input type="text" name="armazenamento_capacidade" value="{{ maquina.armazenamento_capacidade or '' if maquina else '' }}" placeholder="Ex: 500GB, 1TB" class="input-glass"/>
+      </div>
+
+      <!-- Data Aquisição -->
+      <div>
+        <label class="text-xs text-slate-400 mb-1 block">Data de Aquisição</label>
+        <input type="date" name="data_aquisicao" value="{{ maquina.data_aquisicao or '' if maquina else '' }}" class="input-glass"/>
+      </div>
+
+      <!-- Intervalo de manutenção -->
+      <div>
+        <label class="text-xs text-slate-400 mb-1 block">Intervalo de Manutenção (dias)</label>
+        <input type="number" name="intervalo_manutencao_dias" min="1" max="3650"
+          value="{{ maquina.intervalo_manutencao_dias or '' if maquina else '' }}"
+          placeholder="Padrão do setor" class="input-glass"/>
+      </div>
+
+      <!-- Observações -->
+      <div class="md:col-span-2">
+        <label class="text-xs text-slate-400 mb-1 block">Observações</label>
+        <textarea name="observacoes" rows="3" placeholder="Informações adicionais…" class="input-glass resize-none">{{ maquina.observacoes or '' if maquina else '' }}</textarea>
+      </div>
+    </div>
+
+    <div class="flex gap-3 pt-2">
+      <button type="submit" class="btn-primary">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+        Salvar
+      </button>
+      <a href="/maquinas/" class="btn-secondary">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

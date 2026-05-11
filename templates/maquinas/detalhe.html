@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block title %}{{ maquina.nome }} — MaqControl{% endblock %}
+
+{% block content %}
+<div class="fade-up max-w-4xl mx-auto">
+
+  <!-- Cabeçalho -->
+  <div class="flex items-start justify-between mb-6">
+    <div class="flex items-center gap-4">
+      <a href="/maquinas/" class="text-slate-400 hover:text-white transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+      </a>
+      <div>
+        <h1 class="text-2xl font-bold text-white">{{ maquina.nome }}</h1>
+        <p class="text-slate-400 text-sm">{{ maquina.tipo.value if maquina.tipo.value is defined else maquina.tipo }} · {{ setor_nome }}</p>
+      </div>
+    </div>
+    <div class="flex gap-2">
+      <a href="/maquinas/{{ maquina.id }}/editar" class="btn-secondary text-sm">Editar</a>
+      <a href="/manutencoes/{{ maquina.id }}/nova" class="btn-primary text-sm">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        Registrar Manutenção
+      </a>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+    <!-- Painel de status -->
+    <div class="lg:col-span-1 space-y-4">
+      {% set sv = maquina.status.value if maquina.status.value is defined else maquina.status %}
+      <div class="glass rounded-2xl p-5
+        {% if sv == 'OK' %}status-ok
+        {% elif sv == 'Manutenção Próxima' %}status-proxima
+        {% elif sv == 'Precisa de Manutenção' %}status-precisa
+        {% else %}status-sem-registro{% endif %}">
+        <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">Status Atual</p>
+        {% if sv == "OK" %}
+          <span class="badge-ok px-3 py-1 rounded-full text-sm font-medium">✓ OK</span>
+        {% elif sv == "Manutenção Próxima" %}
+          <span class="badge-proxima px-3 py-1 rounded-full text-sm font-medium">⚠ Manutenção Próxima</span>
+        {% elif sv == "Precisa de Manutenção" %}
+          <span class="badge-precisa px-3 py-1 rounded-full text-sm font-medium">✗ Precisa de Manutenção</span>
+        {% else %}
+          <span class="badge-sem-registro px-3 py-1 rounded-full text-sm font-medium">— Sem Registro</span>
+        {% endif %}
+      </div>
+
+      <!-- Info de manutenção -->
+      <div class="glass rounded-2xl p-5 space-y-3">
+        <p class="text-xs text-slate-400 uppercase tracking-wider">Manutenção</p>
+        <div>
+          <p class="text-xs text-slate-500">Última</p>
+          <p class="text-sm text-white">{{ maquina.ultima_manutencao or "—" }}</p>
+        </div>
+        <div>
+          <p class="text-xs text-slate-500">Próxima</p>
+          <p class="text-sm text-white {% if maquina.proxima_manutencao and maquina.proxima_manutencao < hoje %}text-red-400{% endif %}">
+            {{ maquina.proxima_manutencao or "—" }}
+          </p>
+        </div>
+        <div>
+          <p class="text-xs text-slate-500">Intervalo</p>
+          <p class="text-sm text-white">{{ intervalo_efetivo ~ " dias" if intervalo_efetivo else "—" }}</p>
+        </div>
+      </div>
+
+      <!-- Ações -->
+      <div class="glass rounded-2xl p-5">
+        <p class="text-xs text-slate-400 uppercase tracking-wider mb-3">Ações</p>
+        <form method="post" action="/maquinas/{{ maquina.id }}/deletar"
+              onsubmit="return confirm('Tem certeza? Esta ação não pode ser desfeita.')">
+          <button type="submit" class="btn-danger w-full text-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            Excluir Máquina
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Detalhes -->
+    <div class="lg:col-span-2 space-y-5">
+      <!-- Hardware -->
+      <div class="glass rounded-2xl p-5">
+        <p class="text-xs text-slate-400 uppercase tracking-wider mb-4">Hardware</p>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <p class="text-xs text-slate-500">IP</p>
+            <p class="text-sm text-white font-mono">{{ maquina.ip or "—" }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-slate-500">AnyDesk</p>
+            <p class="text-sm text-white font-mono">{{ maquina.anydesk or "—" }}</p>
+          </div>
+          <div class="col-span-2">
+            <p class="text-xs text-slate-500">Processador</p>
+            <p class="text-sm text-white">{{ maquina.processador or "—" }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-slate-500">Memória RAM</p>
+            <p class="text-sm text-white">{{ maquina.memoria_ram or "—" }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-slate-500">Armazenamento</p>
+            <p class="text-sm text-white">{{ maquina.armazenamento_tipo or "" }} {{ maquina.armazenamento_capacidade or "—" }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-slate-500">Data Aquisição</p>
+            <p class="text-sm text-white">{{ maquina.data_aquisicao or "—" }}</p>
+          </div>
+          <div>
+            <p class="text-xs text-slate-500">Cadastrado em</p>
+            <p class="text-sm text-white">{{ maquina.data_cadastro }}</p>
+          </div>
+        </div>
+        {% if maquina.observacoes %}
+        <div class="mt-4 pt-4 border-t border-white/10">
+          <p class="text-xs text-slate-500 mb-1">Observações</p>
+          <p class="text-sm text-slate-300">{{ maquina.observacoes }}</p>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Histórico de manutenções -->
+      <div class="glass rounded-2xl p-5">
+        <div class="flex items-center justify-between mb-4">
+          <p class="text-xs text-slate-400 uppercase tracking-wider">Histórico de Manutenções</p>
+          <a href="/manutencoes/{{ maquina.id }}/nova" class="text-verde-400 text-xs hover:underline">+ Registrar</a>
+        </div>
+        {% if historico %}
+        <div class="space-y-3">
+          {% for h in historico %}
+          <div class="flex items-start justify-between p-3 rounded-xl bg-white/5 border border-white/8">
+            <div>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-xs font-medium text-verde-400">{{ h.tipo }}</span>
+                <span class="text-xs text-slate-500">{{ h.data_manutencao }}</span>
+              </div>
+              <p class="text-sm text-white">{{ h.descricao }}</p>
+              <p class="text-xs text-slate-400 mt-0.5">Responsável: {{ h.responsavel }}</p>
+              {% if h.observacoes %}<p class="text-xs text-slate-500 mt-0.5">{{ h.observacoes }}</p>{% endif %}
+            </div>
+            <form method="post" action="/manutencoes/{{ h.id }}/deletar" onsubmit="return confirm('Remover este registro?')">
+              <input type="hidden" name="maquina_id" value="{{ maquina.id }}"/>
+              <button type="submit" class="text-slate-600 hover:text-red-400 transition-colors ml-3 mt-0.5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            </form>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-slate-500 text-sm text-center py-6">Nenhuma manutenção registrada ainda.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

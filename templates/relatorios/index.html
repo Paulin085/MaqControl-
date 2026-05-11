@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Relatórios — MaqControl{% endblock %}
+
+{% block content %}
+<div class="fade-up max-w-2xl mx-auto">
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-white">Relatórios</h1>
+    <p class="text-slate-400 text-sm mt-1">Exporte dados do parque de máquinas em formato Excel</p>
+  </div>
+
+  <div class="glass rounded-2xl p-6">
+    <form method="post" action="/relatorios/exportar-excel" class="space-y-5">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <!-- Filtro Setor -->
+        <div>
+          <label class="text-xs text-slate-400 mb-1 block">Setor</label>
+          <select name="setor_id" class="input-glass">
+            <option value="">Todos os setores</option>
+            {% for s in setores %}
+            <option value="{{ s.id }}">{{ s.nome }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <!-- Filtro Tipo -->
+        <div>
+          <label class="text-xs text-slate-400 mb-1 block">Tipo</label>
+          <select name="tipo" class="input-glass">
+            <option value="">Todos os tipos</option>
+            {% for t in tipos %}
+            <option value="{{ t }}">{{ t }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <!-- Filtro Status -->
+        <div>
+          <label class="text-xs text-slate-400 mb-1 block">Status</label>
+          <select name="status" class="input-glass">
+            <option value="">Todos os status</option>
+            <option value="OK">OK</option>
+            <option value="Manutenção Próxima">Manutenção Próxima</option>
+            <option value="Precisa de Manutenção">Precisa de Manutenção</option>
+            <option value="Sem Registro de Manutenção">Sem Registro</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Seleção de campos -->
+      <div>
+        <p class="text-xs text-slate-400 mb-3">Campos a exportar <span class="text-slate-600">(deixe vazio para exportar todos)</span></p>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+          {% set campos_lista = [
+            ("nome", "Nome"),
+            ("tipo", "Tipo"),
+            ("setor", "Setor"),
+            ("ip", "IP"),
+            ("anydesk", "AnyDesk"),
+            ("processador", "Processador"),
+            ("memoria_ram", "Memória RAM"),
+            ("armazenamento_tipo", "Tipo Armazenamento"),
+            ("armazenamento_capacidade", "Capacidade"),
+            ("status", "Status"),
+            ("ultima_manutencao", "Última Manutenção"),
+            ("proxima_manutencao", "Próxima Manutenção"),
+            ("data_aquisicao", "Data Aquisição"),
+            ("data_cadastro", "Data Cadastro"),
+            ("observacoes", "Observações"),
+          ] %}
+          {% for val, label in campos_lista %}
+          <label class="flex items-center gap-2 text-sm text-slate-300 cursor-pointer hover:text-white transition-colors">
+            <input type="checkbox" name="campos" value="{{ val }}" checked
+              class="w-3.5 h-3.5 accent-verde-500 cursor-pointer"/>
+            {{ label }}
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="pt-2">
+        <button type="submit" class="btn-primary w-full justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Exportar Excel
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

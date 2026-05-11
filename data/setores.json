@@ -1,0 +1,74 @@
+[
+  {
+    "nome": "T.i",
+    "descricao": "Setor de Tecnologia da Informação",
+    "intervalo_manutencao_dias": 90,
+    "id": "9f782667-9359-4984-9b28-2376545393d9"
+  },
+  {
+    "nome": "Logística",
+    "descricao": null,
+    "intervalo_manutencao_dias": 45,
+    "id": "12a51d16-4484-4052-8e8a-71054e32e741"
+  },
+  {
+    "nome": "RH/DP",
+    "descricao": null,
+    "intervalo_manutencao_dias": 90,
+    "id": "74efb6d1-c79a-494f-8ce8-2aa70dd2a580"
+  },
+  {
+    "nome": "Financeiro",
+    "descricao": null,
+    "intervalo_manutencao_dias": 90,
+    "id": "24695460-3189-4bbb-ab97-d45d3ccf0f69"
+  },
+  {
+    "nome": "Diretoria",
+    "descricao": null,
+    "intervalo_manutencao_dias": 90,
+    "id": "a3a48076-51c4-4623-8d0a-6e3fb523f2c2"
+  },
+  {
+    "nome": "Comercial",
+    "descricao": null,
+    "intervalo_manutencao_dias": 90,
+    "id": "c126e887-8988-4955-abb8-8170ee4177e6"
+  },
+  {
+    "nome": "Marketing",
+    "descricao": null,
+    "intervalo_manutencao_dias": 90,
+    "id": "c98bf992-9210-485c-94d2-c0a7c0ed4878"
+  },
+  {
+    "nome": "Recepção ",
+    "descricao": null,
+    "intervalo_manutencao_dias": 90,
+    "id": "e3597145-07ea-40e4-ad03-a183cb041f98"
+  },
+  {
+    "nome": "Delivery",
+    "descricao": null,
+    "intervalo_manutencao_dias": 90,
+    "id": "d354cbca-13ea-492f-ae25-3491c7fb74ba"
+  },
+  {
+    "nome": "Granel",
+    "descricao": null,
+    "intervalo_manutencao_dias": 90,
+    "id": "0c7614f5-4654-4d1c-bd6f-065285f1a9b6"
+  },
+  {
+    "nome": "Sala de reunião",
+    "descricao": null,
+    "intervalo_manutencao_dias": 90,
+    "id": "9d316c08-2aa3-4303-bf40-2963fb85d284"
+  },
+  {
+    "nome": "Controladoria",
+    "descricao": null,
+    "intervalo_manutencao_dias": 90,
+    "id": "2ece3adc-4660-40bc-ba8d-280408f4d528"
+  }
+]

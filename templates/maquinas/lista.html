@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block title %}Máquinas — MaqControl{% endblock %}
+
+{% block content %}
+<div class="fade-up">
+  <!-- Cabeçalho -->
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold text-white">Máquinas</h1>
+      <p class="text-slate-400 text-sm mt-1">{{ maquinas|length }} máquina(s) encontrada(s)</p>
+    </div>
+    <a href="/maquinas/nova" class="btn-primary">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+      Nova Máquina
+    </a>
+  </div>
+
+  <!-- Filtros -->
+  <form method="get" class="glass rounded-2xl p-4 mb-6 flex flex-wrap gap-3 items-end">
+    <div class="flex-1 min-w-[180px]">
+      <label class="text-xs text-slate-400 mb-1 block">Buscar</label>
+      <input type="text" name="busca" value="{{ busca }}" placeholder="Nome, IP ou AnyDesk…" class="input-glass"/>
+    </div>
+    <div class="min-w-[160px]">
+      <label class="text-xs text-slate-400 mb-1 block">Setor</label>
+      <select name="setor_id" class="input-glass">
+        <option value="">Todos os setores</option>
+        {% for s in setores %}
+        <option value="{{ s.id }}" {% if filtro_setor == s.id %}selected{% endif %}>{{ s.nome }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="min-w-[160px]">
+      <label class="text-xs text-slate-400 mb-1 block">Tipo</label>
+      <select name="tipo" class="input-glass">
+        <option value="">Todos os tipos</option>
+        {% for t in tipos %}
+        <option value="{{ t }}" {% if filtro_tipo == t %}selected{% endif %}>{{ t }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="min-w-[160px]">
+      <label class="text-xs text-slate-400 mb-1 block">Status</label>
+      <select name="status" class="input-glass">
+        <option value="">Todos os status</option>
+        <option value="OK" {% if filtro_status == "OK" %}selected{% endif %}>OK</option>
+        <option value="Manutenção Próxima" {% if filtro_status == "Manutenção Próxima" %}selected{% endif %}>Manutenção Próxima</option>
+        <option value="Precisa de Manutenção" {% if filtro_status == "Precisa de Manutenção" %}selected{% endif %}>Precisa de Manutenção</option>
+        <option value="Sem Registro de Manutenção" {% if filtro_status == "Sem Registro de Manutenção" %}selected{% endif %}>Sem Registro</option>
+      </select>
+    </div>
+    <button type="submit" class="btn-primary">Filtrar</button>
+    <a href="/maquinas/" class="btn-secondary">Limpar</a>
+  </form>
+
+  <!-- Tabela / Cards -->
+  {% if maquinas %}
+  <div class="glass rounded-2xl overflow-hidden">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-white/10 text-slate-400 text-xs uppercase tracking-wider">
+          <th class="text-left px-5 py-3">Nome</th>
+          <th class="text-left px-5 py-3 hidden md:table-cell">Tipo</th>
+          <th class="text-left px-5 py-3 hidden lg:table-cell">Setor</th>
+          <th class="text-left px-5 py-3 hidden md:table-cell">IP</th>
+          <th class="text-left px-5 py-3">Status</th>
+          <th class="text-left px-5 py-3 hidden lg:table-cell">Próx. Manutenção</th>
+          <th class="px-5 py-3"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in maquinas %}
+        {% set status_val = m.status.value if m.status.value is defined else m.status %}
+        <tr class="border-b border-white/5 hover:bg-white/5 transition-colors">
+          <td class="px-5 py-3 font-medium text-white">{{ m.nome }}</td>
+          <td class="px-5 py-3 text-slate-400 hidden md:table-cell">{{ m.tipo.value if m.tipo.value is defined else m.tipo }}</td>
+          <td class="px-5 py-3 text-slate-400 hidden lg:table-cell">{{ setor_map.get(m.setor_id, "—") }}</td>
+          <td class="px-5 py-3 text-slate-400 hidden md:table-cell font-mono text-xs">{{ m.ip or "—" }}</td>
+          <td class="px-5 py-3">
+            {% set sv = m.status.value if m.status.value is defined else m.status %}
+            {% if sv == "OK" %}
+              <span class="badge-ok text-xs px-2 py-0.5 rounded-full">✓ OK</span>
+            {% elif sv == "Manutenção Próxima" %}
+              <span class="badge-proxima text-xs px-2 py-0.5 rounded-full">⚠ Próxima</span>
+            {% elif sv == "Precisa de Manutenção" %}
+              <span class="badge-precisa text-xs px-2 py-0.5 rounded-full">✗ Urgente</span>
+            {% else %}
+              <span class="badge-sem-registro text-xs px-2 py-0.5 rounded-full">— Sem Registro</span>
+            {% endif %}
+          </td>
+          <td class="px-5 py-3 text-slate-400 hidden lg:table-cell text-xs">{{ m.proxima_manutencao or "—" }}</td>
+          <td class="px-5 py-3 text-right">
+            <a href="/maquinas/{{ m.id }}" class="text-verde-400 hover:text-verde-300 text-xs font-medium transition-colors">Ver →</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="glass rounded-2xl p-16 text-center text-slate-500">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 mx-auto mb-4 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/></svg>
+    <p class="text-lg">Nenhuma máquina encontrada</p>
+    <p class="text-sm mt-1">Tente ajustar os filtros ou <a href="/maquinas/nova" class="text-verde-400 hover:underline">cadastre uma nova máquina</a>.</p>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

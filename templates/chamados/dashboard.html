@@ -1,0 +1,400 @@
+{% extends "base.html" %}
+
+{% block title %}Chamados - MaqControl{% endblock %}
+
+{% block extra_head %}
+<style>
+    .category-container {
+        perspective: 1000px;
+    }
+    
+    .stack-wrapper {
+        position: relative;
+        min-height: 280px;
+        transition: min-height 0.4s ease;
+    }
+    
+    .stack-wrapper.expanded {
+        min-height: auto;
+    }
+
+    .card-chamado {
+        transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.4s ease, opacity 0.4s ease, background 0.4s ease;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 1;
+        cursor: pointer;
+        backface-visibility: hidden; /* Melhora performance da animação */
+    }
+
+    .card-chamado:active {
+        transform: scale(0.98) !important;
+        transition: transform 0.1s ease;
+    }
+
+    /* Efeito de empilhamento quando colapsado - Até 5 cards visíveis */
+    .stack-wrapper:not(.expanded) .card-chamado {
+        background: #052e16; /* Verde escuro sólido para combinar com o tema */
+        border-color: rgba(34, 197, 94, 0.2);
+    }
+    
+    .stack-wrapper:not(.expanded) .card-chamado:nth-child(1) { transform: translateY(0) translateZ(0); z-index: 10; opacity: 1; }
+    .stack-wrapper:not(.expanded) .card-chamado:nth-child(2) { transform: translateY(8px) scale(0.98); z-index: 9; opacity: 0.9; }
+    .stack-wrapper:not(.expanded) .card-chamado:nth-child(3) { transform: translateY(16px) scale(0.96); z-index: 8; opacity: 0.8; }
+    .stack-wrapper:not(.expanded) .card-chamado:nth-child(4) { transform: translateY(24px) scale(0.94); z-index: 7; opacity: 0.7; }
+    .stack-wrapper:not(.expanded) .card-chamado:nth-child(5) { transform: translateY(32px) scale(0.92); z-index: 6; opacity: 0.6; }
+    .stack-wrapper:not(.expanded) .card-chamado:nth-child(n+6) { opacity: 0; pointer-events: none; }
+
+    /* Esconde o conteúdo dos cards de trás para não "vazar" o texto */
+    .stack-wrapper:not(.expanded) .card-chamado:nth-child(n+2) * {
+        visibility: hidden;
+    }
+
+    /* Sombra extra para o card do topo */
+    .stack-wrapper:not(.expanded) .card-chamado:nth-child(1) {
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+        background: var(--glass-bg); /* Volta o glass apenas no primeiro */
+        backdrop-filter: blur(16px);
+    }
+
+    /* Efeito quando expandido - Animação de espalhamento suave */
+    .stack-wrapper.expanded {
+        display: flex;
+        flex-direction: column;
+        gap: 1.2rem;
+        animation: expandStack 0.5s ease forwards;
+    }
+
+    @keyframes expandStack {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .stack-wrapper.expanded .card-chamado {
+        position: relative;
+        transform: scale(1) translateY(0) !important;
+        opacity: 1 !important;
+        z-index: 10 !important;
+        background: var(--glass-bg) !important;
+        backdrop-filter: blur(16px);
+        visibility: visible !important;
+    }
+
+    .stack-wrapper.expanded .card-chamado * {
+        visibility: visible !important;
+        animation: fadeIn 0.4s ease forwards;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    /* Animação de Motion Blur para transição lateral */
+    .motion-blur-right {
+        animation: blurRight 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        pointer-events: none;
+    }
+
+    @keyframes blurRight {
+        0% {
+            transform: translateX(0) scale(1) skewX(0);
+            filter: blur(0);
+            opacity: 1;
+        }
+        50% {
+            transform: translateX(100px) scale(1.05) skewX(-15deg);
+            filter: blur(8px);
+            opacity: 0.5;
+        }
+        100% {
+            transform: translateX(300px) scale(0.9) skewX(-30deg);
+            filter: blur(12px);
+            opacity: 0;
+        }
+    }
+
+    .motion-blur-left {
+        animation: blurLeft 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        pointer-events: none;
+    }
+
+    @keyframes blurLeft {
+        0% {
+            transform: translateX(0) scale(1) skewX(0);
+            filter: blur(0);
+            opacity: 1;
+        }
+        50% {
+            transform: translateX(-100px) scale(1.05) skewX(15deg);
+            filter: blur(8px);
+            opacity: 0.5;
+        }
+        100% {
+            transform: translateX(-300px) scale(0.9) skewX(30deg);
+            filter: blur(12px);
+            opacity: 0;
+        }
+    }
+
+    .status-badge {
+        padding: 4px 10px;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    .status-fila { background: rgba(107, 114, 128, 0.2); color: #d1d5db; border: 1px solid rgba(107, 114, 128, 0.4); }
+    .status-andamento { background: rgba(245, 158, 11, 0.2); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .status-concluido { background: rgba(34, 197, 94, 0.2); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.4); }
+    
+    .dificuldade-baixa { color: #86efac; }
+    .dificuldade-media { color: #fcd34d; }
+    .dificuldade-alta { color: #fb923c; }
+    .dificuldade-critica { color: #f87171; }
+
+    .category-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .fab {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        width: 60px;
+        height: 60px;
+        border-radius: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        z-index: 100;
+        transition: transform 0.2s;
+    }
+    .fab:hover { transform: scale(1.1); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="fade-up">
+    <!-- Header e Indicadores -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-white mb-1">Gestão de Chamados</h1>
+            <p class="text-slate-400">Acompanhe e registre solicitações de suporte.</p>
+        </div>
+        
+        <div class="flex gap-4 overflow-x-auto pb-2 md:pb-0">
+            <div class="glass p-4 rounded-2xl min-w-[140px]">
+                <p class="text-xs text-slate-400 uppercase font-semibold mb-1">Total</p>
+                <p class="text-2xl font-bold text-white">{{ indicadores.total }}</p>
+            </div>
+            <div class="glass p-4 rounded-2xl min-w-[140px] border-l-4 border-l-amber-500">
+                <p class="text-xs text-slate-400 uppercase font-semibold mb-1">Em Aberto</p>
+                <p class="text-2xl font-bold text-white">{{ indicadores.em_aberto }}</p>
+            </div>
+            <div class="glass p-4 rounded-2xl min-w-[140px] border-l-4 border-l-verde-500">
+                <p class="text-xs text-slate-400 uppercase font-semibold mb-1">Concluídos Hoje</p>
+                <p class="text-2xl font-bold text-white">{{ indicadores.concluidos_hoje }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros e Busca -->
+    <div class="glass p-6 rounded-2xl mb-12">
+        <form method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="md:col-span-2">
+                <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Buscar</label>
+                <div class="relative">
+                    <input type="text" name="busca" value="{{ filtros.busca or '' }}" placeholder="Solicitante ou Loja..." class="input-glass pl-10">
+                    <svg class="w-5 h-5 absolute left-3 top-2.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </div>
+            </div>
+            
+            <div class="flex items-end gap-2 md:col-span-2">
+                <div class="flex-1">
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Dificuldade</label>
+                    <select name="dificuldade" class="input-glass">
+                        <option value="">Todas</option>
+                        {% for opt in dificuldade_options %}
+                        <option value="{{ opt }}" {% if filtros.dificuldade == opt %}selected{% endif %}>{{ opt }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary p-2.5">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                    </svg>
+                </button>
+                <a href="/chamados/exportar?busca={{ filtros.busca or '' }}&dificuldade={{ filtros.dificuldade or '' }}" class="btn-secondary p-2.5" title="Exportar para Excel">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Categorias Empilhadas -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        {% for status, lista in grupos.items() %}
+        <div class="category-container">
+            <div class="category-header">
+                <div class="flex items-center gap-3">
+                    <div class="w-2 h-6 rounded-full {% if status == 'Fila' %}bg-slate-500{% elif status == 'Em Andamento' %}bg-amber-500{% else %}bg-verde-500{% endif %}"></div>
+                    <h2 class="text-xl font-bold text-white">{{ status }}</h2>
+                </div>
+                <span class="text-xs font-bold text-slate-500 bg-white/5 px-2.5 py-1 rounded-lg">{{ lista|length }}</span>
+            </div>
+
+            <div class="stack-wrapper" id="stack-{{ loop.index }}" onclick="toggleStack(this)">
+                {% for c in lista %}
+                <div class="glass card-chamado rounded-2xl overflow-hidden flex flex-col shadow-2xl border-white/10">
+                    <div class="p-5 flex-1">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="status-badge {% if c.status.value == 'Fila' %}status-fila{% elif c.status.value == 'Em Andamento' %}status-andamento{% else %}status-concluido{% endif %}">
+                                {{ c.status.value }}
+                            </span>
+                            <span class="text-[10px] text-slate-500 font-medium">{{ c.data_registro.strftime('%d/%m/%Y %H:%M') }}</span>
+                        </div>
+                        
+                        <h3 class="text-lg font-bold text-white mb-1 line-clamp-1">{{ c.solicitante }}</h3>
+                        <p class="text-xs text-verde-400 font-semibold mb-3 uppercase tracking-wider">{{ c.setor_loja }}</p>
+                        
+                        <p class="text-sm text-slate-400 line-clamp-2 mb-4">
+                            {{ c.descricao }}
+                        </p>
+                        
+                        <div class="flex items-center gap-2 text-xs">
+                            <span class="text-slate-500">Dificuldade:</span>
+                            <span class="font-bold {% if c.dificuldade.value == 'Baixa' %}dificuldade-baixa{% elif c.dificuldade.value == 'Média' %}dificuldade-media{% elif c.dificuldade.value == 'Alta' %}dificuldade-alta{% else %}dificuldade-critica{% endif %}">
+                                {{ c.dificuldade.value }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="px-5 py-3 bg-white/5 border-t border-white/10 flex items-center gap-4">
+                        {% if c.status.value != 'Fila' %}
+                        <div class="relative">
+                            <button type="button" 
+                                    onclick="event.stopPropagation(); processStatusChange('{{ c.id }}', this.closest('.card-chamado'), 'voltar')"
+                                    class="bg-slate-500/20 hover:bg-slate-500/40 text-slate-300 p-1.5 rounded-lg transition-all group" 
+                                    title="Voltar Status">
+                                <svg class="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 19l-7-7 7-7M19 19l-7-7 7-7"/>
+                                </svg>
+                            </button>
+                        </div>
+                        {% endif %}
+
+                        {% if c.anexo_path %}
+                        <a href="{{ c.anexo_path }}" target="_blank" class="text-verde-400 hover:text-verde-300 transition-colors" title="Ver Anexo" onclick="event.stopPropagation()">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.414a4 4 0 00-5.656-5.656l-6.415 6.415a6 6 0 108.486 8.486L20.5 13"/>
+                            </svg>
+                        </a>
+                        {% endif %}
+                        
+                        <div class="flex-1"></div>
+
+                        <a href="/chamados/{{ c.id }}/editar" class="text-amber-400/60 hover:text-amber-400 transition-colors" title="Editar Chamado" onclick="event.stopPropagation()">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                            </svg>
+                        </a>
+                        
+                        <form action="/chamados/{{ c.id }}/deletar" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir este chamado?')" onclick="event.stopPropagation()">
+                            <button type="submit" class="text-red-400/60 hover:text-red-400 transition-colors">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </button>
+                        </form>
+
+                        {% if c.status.value != 'Concluído' %}
+                        <div class="relative">
+                            <button type="button" 
+                                    onclick="event.stopPropagation(); processStatusChange('{{ c.id }}', this.closest('.card-chamado'), 'avancar')"
+                                    class="bg-verde-500/20 hover:bg-verde-500/40 text-verde-300 p-1.5 rounded-lg transition-all group" 
+                                    title="Avançar Status">
+                                <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
+                                </svg>
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% else %}
+                <div class="py-8 text-center glass rounded-2xl border-dashed border-white/5">
+                    <p class="text-slate-600 text-sm">Vazio</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Botão Registrar (FAB) -->
+    <a href="/chamados/novo" class="fab btn-primary" title="Registrar Novo Chamado">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+        </svg>
+    </a>
+</div>
+
+<script>
+    function toggleStack(el) {
+        // Se já está expandido, recolhe. Se não, expande.
+        el.classList.toggle('expanded');
+        
+        // Opcional: Fecha outras stacks quando uma abre
+        if (el.classList.contains('expanded')) {
+            document.querySelectorAll('.stack-wrapper').forEach(other => {
+                if (other !== el) other.classList.remove('expanded');
+            });
+        }
+    }
+
+    function triggerMotionBlur(card, direction) {
+        if (!card) return;
+        card.classList.add(direction === 'voltar' ? 'motion-blur-left' : 'motion-blur-right');
+    }
+
+    async function processStatusChange(id, card, action) {
+        if (!id || !card) return;
+        
+        // 1. Inicia a animação visual na direção correta
+        triggerMotionBlur(card, action);
+        
+        // 2. Define o endpoint correto
+        const endpoint = action === 'voltar' ? '/chamados/voltar-emergencial' : '/chamados/avancar-emergencial';
+        
+        // 3. Faz a chamada para o servidor em background
+        try {
+            await fetch(`${endpoint}?id=${id}`, {
+                method: 'POST'
+            });
+            
+            // 4. Aguarda o fim da animação e recarrega
+            setTimeout(() => {
+                window.location.reload();
+            }, 550);
+            
+        } catch (error) {
+            console.error('Erro ao alterar status:', error);
+            card.classList.remove('motion-blur-left', 'motion-blur-right');
+            alert('Não foi possível alterar o status. Tente novamente.');
+        }
+    }
+</script>
+{% endblock %}
