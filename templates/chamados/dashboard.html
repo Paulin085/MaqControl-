@@ -185,24 +185,39 @@
 {% block content %}
 <div class="fade-up">
     <!-- Header e Indicadores -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
-        <div>
-            <h1 class="text-3xl font-bold text-white mb-1">Gestão de Chamados</h1>
-            <p class="text-slate-400">Acompanhe e registre solicitações de suporte.</p>
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-10">
+        <div class="flex-1">
+            <div class="flex items-center gap-3 mb-2">
+                <h1 class="text-4xl font-extrabold text-white tracking-tight">Gestão de Chamados</h1>
+                <div class="flex items-center gap-1.5 bg-verde-500/10 text-verde-400 text-[10px] font-black uppercase px-2.5 py-1 rounded-full border border-verde-500/20">
+                    <span class="w-1.5 h-1.5 rounded-full bg-verde-500 animate-pulse"></span>
+                    Ativos
+                </div>
+            </div>
+            <p class="text-slate-400 text-sm md:text-base max-w-xl">Monitoramento em tempo real dos chamados ativos e concluídos hoje.</p>
         </div>
         
-        <div class="flex gap-4 overflow-x-auto pb-2 md:pb-0">
-            <div class="glass p-4 rounded-2xl min-w-[140px]">
-                <p class="text-xs text-slate-400 uppercase font-semibold mb-1">Total</p>
-                <p class="text-2xl font-bold text-white">{{ indicadores.total }}</p>
-            </div>
-            <div class="glass p-4 rounded-2xl min-w-[140px] border-l-4 border-l-amber-500">
-                <p class="text-xs text-slate-400 uppercase font-semibold mb-1">Em Aberto</p>
-                <p class="text-2xl font-bold text-white">{{ indicadores.em_aberto }}</p>
-            </div>
-            <div class="glass p-4 rounded-2xl min-w-[140px] border-l-4 border-l-verde-500">
-                <p class="text-xs text-slate-400 uppercase font-semibold mb-1">Concluídos Hoje</p>
-                <p class="text-2xl font-bold text-white">{{ indicadores.concluidos_hoje }}</p>
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+            <a href="/chamados/lista" class="btn-secondary group flex items-center justify-center gap-2 py-3 px-6 glass hover:bg-white/10 transition-all duration-300">
+                <svg class="w-5 h-5 text-verde-400 group-hover:rotate-12 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+                <span class="font-bold">Ver Lista Geral</span>
+            </a>
+            
+            <div class="flex gap-3 overflow-x-auto pb-1 sm:pb-0">
+                <div class="glass px-5 py-3 rounded-2xl min-w-[120px] flex flex-col justify-center border-b-2 border-b-white/5">
+                    <p class="text-[10px] text-slate-500 uppercase font-black tracking-widest mb-0.5">Total</p>
+                    <p class="text-xl font-black text-white">{{ indicadores.total }}</p>
+                </div>
+                <div class="glass px-5 py-3 rounded-2xl min-w-[120px] flex flex-col justify-center border-b-2 border-b-amber-500/50">
+                    <p class="text-[10px] text-amber-500/70 uppercase font-black tracking-widest mb-0.5">Abertos</p>
+                    <p class="text-xl font-black text-white">{{ indicadores.em_aberto }}</p>
+                </div>
+                <div class="glass px-5 py-3 rounded-2xl min-w-[120px] flex flex-col justify-center border-b-2 border-b-verde-500/50">
+                    <p class="text-[10px] text-verde-500/70 uppercase font-black tracking-widest mb-0.5">Feitos</p>
+                    <p class="text-xl font-black text-white">{{ indicadores.concluidos_hoje }}</p>
+                </div>
             </div>
         </div>
     </div>
@@ -222,6 +237,15 @@
             
             <div class="flex items-end gap-2 md:col-span-2">
                 <div class="flex-1">
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Tipo</label>
+                    <select name="tipo" class="input-glass">
+                        <option value="">Todos</option>
+                        {% for opt in tipo_options %}
+                        <option value="{{ opt }}" {% if filtros.tipo == opt %}selected{% endif %}>{{ opt }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="flex-1">
                     <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Dificuldade</label>
                     <select name="dificuldade" class="input-glass">
                         <option value="">Todas</option>
@@ -235,7 +259,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
                     </svg>
                 </button>
-                <a href="/chamados/exportar?busca={{ filtros.busca or '' }}&dificuldade={{ filtros.dificuldade or '' }}" class="btn-secondary p-2.5" title="Exportar para Excel">
+                <a href="/chamados/exportar?busca={{ filtros.busca or '' }}&tipo={{ filtros.tipo or '' }}&dificuldade={{ filtros.dificuldade or '' }}" class="btn-secondary p-2.5" title="Exportar para Excel">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                     </svg>
@@ -258,12 +282,17 @@
 
             <div class="stack-wrapper" id="stack-{{ loop.index }}" onclick="toggleStack(this)">
                 {% for c in lista %}
-                <div class="glass card-chamado rounded-2xl overflow-hidden flex flex-col shadow-2xl border-white/10">
+                <div class="glass card-chamado rounded-2xl overflow-hidden flex flex-col shadow-2xl border-white/10" data-status="{{ c.status.value }}">
                     <div class="p-5 flex-1">
                         <div class="flex justify-between items-start mb-4">
-                            <span class="status-badge {% if c.status.value == 'Fila' %}status-fila{% elif c.status.value == 'Em Andamento' %}status-andamento{% else %}status-concluido{% endif %}">
-                                {{ c.status.value }}
-                            </span>
+                            <div class="flex flex-col gap-1.5">
+                                <span class="status-badge {% if c.status.value == 'Fila' %}status-fila{% elif c.status.value == 'Em Andamento' %}status-andamento{% else %}status-concluido{% endif %}">
+                                    {{ c.status.value }}
+                                </span>
+                                <span class="text-[9px] font-black uppercase px-2 py-0.5 rounded-md {% if c.tipo.value == 'Demanda' %}bg-blue-500/20 text-blue-400 border border-blue-500/30{% else %}bg-slate-500/20 text-slate-400 border border-slate-500/30{% endif %}">
+                                    {{ c.tipo.value }}
+                                </span>
+                            </div>
                             <span class="text-[10px] text-slate-500 font-medium">{{ c.data_registro.strftime('%d/%m/%Y %H:%M') }}</span>
                         </div>
                         
@@ -274,11 +303,20 @@
                             {{ c.descricao }}
                         </p>
                         
-                        <div class="flex items-center gap-2 text-xs">
-                            <span class="text-slate-500">Dificuldade:</span>
-                            <span class="font-bold {% if c.dificuldade.value == 'Baixa' %}dificuldade-baixa{% elif c.dificuldade.value == 'Média' %}dificuldade-media{% elif c.dificuldade.value == 'Alta' %}dificuldade-alta{% else %}dificuldade-critica{% endif %}">
-                                {{ c.dificuldade.value }}
-                            </span>
+                        <div class="flex flex-col gap-2 text-xs">
+                            <div class="flex items-center gap-2">
+                                <span class="text-slate-500">Dificuldade:</span>
+                                <span class="font-bold {% if c.dificuldade.value == 'Baixa' %}dificuldade-baixa{% elif c.dificuldade.value == 'Média' %}dificuldade-media{% elif c.dificuldade.value == 'Alta' %}dificuldade-alta{% else %}dificuldade-critica{% endif %}">
+                                    {{ c.dificuldade.value }}
+                                </span>
+                            </div>
+                            
+                            {% if c.status.value == 'Concluído' and c.resolucao %}
+                            <div class="mt-2 p-3 bg-verde-500/10 border border-verde-500/20 rounded-xl">
+                                <p class="text-[10px] text-verde-400 font-bold uppercase mb-1">Solução:</p>
+                                <p class="text-xs text-slate-300 italic">"{{ c.resolucao }}"</p>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                     
@@ -350,6 +388,27 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
         </svg>
     </a>
+    <!-- Modal de Solução -->
+    <div id="modal-solucao" style="display: none; position: fixed; inset: 0; z-index: 9999; align-items: center; justify-content: center; padding: 1rem; background-color: rgba(15, 23, 42, 0.9); backdrop-filter: blur(4px);">
+        <div class="glass w-full max-w-md rounded-2xl p-6 shadow-2xl border border-white/10" style="margin: auto;">
+            <h3 class="text-xl font-bold text-white mb-2">Concluir Chamado</h3>
+            <p class="text-sm text-slate-400 mb-6">Descreva brevemente a solução aplicada para este chamado.</p>
+            
+            <input type="hidden" id="modal-chamado-id">
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Solução / Resolução</label>
+                    <textarea id="modal-solucao-texto" rows="4" class="input-glass w-full bg-slate-800/50 text-white p-3 rounded-xl border border-white/10" placeholder="Ex: Trocado cabo de rede, configurado driver..."></textarea>
+                </div>
+                
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="fecharModalSolucao()" class="btn-secondary flex-1 px-4 py-2 rounded-xl bg-slate-700 text-white">Cancelar</button>
+                    <button type="button" onclick="confirmarSolucao()" class="btn-primary flex-1 px-4 py-2 rounded-xl bg-verde-600 text-white font-bold">Salvar e Concluir</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -370,9 +429,69 @@
         card.classList.add(direction === 'voltar' ? 'motion-blur-left' : 'motion-blur-right');
     }
 
+    function fecharModalSolucao() {
+        const modal = document.getElementById('modal-solucao');
+        if (modal) modal.style.display = 'none';
+        document.getElementById('modal-solucao-texto').value = '';
+        // Remove blur do card
+        document.querySelectorAll('.card-chamado').forEach(c => {
+            c.classList.remove('motion-blur-right', 'motion-blur-left');
+        });
+    }
+
+    async function confirmarSolucao() {
+        const id = document.getElementById('modal-chamado-id').value;
+        const resolucao = document.getElementById('modal-solucao-texto').value;
+        
+        if (!resolucao.trim()) {
+            alert('Por favor, descreva a solução.');
+            return;
+        }
+
+        const endpoint = `/chamados/avancar-emergencial?id=${id}&resolucao=${encodeURIComponent(resolucao)}`;
+        
+        try {
+            const response = await fetch(endpoint, { method: 'POST' });
+            const result = await response.json();
+            
+            if (result.status === 'ok') {
+                fecharModalSolucao();
+                window.location.reload();
+            } else {
+                alert('Erro do Servidor: ' + (result.msg || 'Erro desconhecido ao salvar.'));
+                // Remove o blur para permitir tentar novamente
+                document.querySelectorAll('.card-chamado').forEach(c => c.classList.remove('motion-blur-right'));
+            }
+        } catch (error) {
+            console.error('Erro ao concluir:', error);
+            alert('Erro de rede ou conexão ao salvar solução.');
+        }
+    }
+
     async function processStatusChange(id, card, action) {
         if (!id || !card) return;
         
+        // Verifica se é um avanço para Concluído (vindo de Em Andamento)
+        let statusAtual = card.getAttribute('data-status') || '';
+        const badge = card.querySelector('.status-badge');
+        const statusTexto = badge ? badge.innerText.trim() : '';
+        
+        // Verifica se o texto ou o atributo indica "Andamento"
+        const isEmAndamento = (statusAtual.includes('Andamento')) || (statusTexto.includes('Andamento'));
+
+        if (action === 'avancar' && isEmAndamento) {
+            const modal = document.getElementById('modal-solucao');
+            if (modal) {
+                document.getElementById('modal-chamado-id').value = id;
+                modal.style.display = 'flex'; // Força o display flex para mostrar
+                document.getElementById('modal-solucao-texto').focus();
+                
+                // Aplica o blur visual suave
+                card.classList.add('motion-blur-right');
+                return;
+            }
+        }
+
         // 1. Inicia a animação visual na direção correta
         triggerMotionBlur(card, action);
         

@@ -10,7 +10,7 @@ import shutil
 
 from crud.crud_chamados import listar_chamados, buscar_chamado, criar_chamado, atualizar_chamado, deletar_chamado
 from crud import listar_setores
-from models.chamado import ChamadoCreate, ChamadoUpdate, Dificuldade, StatusChamado
+from models.chamado import ChamadoCreate, ChamadoUpdate, Dificuldade, StatusChamado, TipoChamado
 
 router = APIRouter(prefix="/chamados", tags=["Chamados"])
 templates = Jinja2Templates(directory="templates")
@@ -24,33 +24,46 @@ async def pg_chamados_dashboard(
     request: Request,
     busca: Optional[str] = None,
     status: Optional[str] = None,
+    tipo: Optional[str] = None,
     dificuldade: Optional[str] = None
 ):
     chamados = listar_chamados()
     setores = listar_setores()
     
+    # Dashboard mostra:
+    # 1. Chamados em Fila ou Em Andamento (independente da data)
+    # 2. Chamados Concluídos apenas se forem de HOJE
+    hoje = date.today()
+    chamados_dashboard = [
+        c for c in chamados 
+        if c.status in [StatusChamado.FILA, StatusChamado.EM_ANDAMENTO] 
+        or (c.status == StatusChamado.CONCLUIDO and c.data_registro.date() == hoje)
+    ]
+
     # Indicadores
-    total = len(chamados)
-    em_aberto = len([c for c in chamados if c.status != StatusChamado.CONCLUIDO])
-    concluidos_hoje = len([c for c in chamados if c.status == StatusChamado.CONCLUIDO and c.data_registro.date() == date.today()])
+    total_dashboard = len(chamados_dashboard)
+    em_aberto = len([c for c in chamados_dashboard if c.status != StatusChamado.CONCLUIDO])
+    concluidos_hoje = len([c for c in chamados_dashboard if c.status == StatusChamado.CONCLUIDO and c.data_registro.date() == hoje])
     
     # Filtros
     if busca:
         busca = busca.lower()
-        chamados = [c for c in chamados if busca in c.solicitante.lower() or busca in c.setor_loja.lower()]
+        chamados_dashboard = [c for c in chamados_dashboard if busca in c.solicitante.lower() or busca in c.setor_loja.lower()]
     if status:
-        chamados = [c for c in chamados if c.status == status]
+        chamados_dashboard = [c for c in chamados_dashboard if c.status == status]
+    if tipo:
+        chamados_dashboard = [c for c in chamados_dashboard if c.tipo == tipo]
     if dificuldade:
-        chamados = [c for c in chamados if c.dificuldade == dificuldade]
+        chamados_dashboard = [c for c in chamados_dashboard if c.dificuldade == dificuldade]
 
-    # Ordenar por data (mais recentes primeiro)
-    chamados.sort(key=lambda x: x.data_registro, reverse=True)
+    # Ordenar por data
+    chamados_dashboard.sort(key=lambda x: x.data_registro, reverse=True)
 
     # Agrupar por status
     grupos = {
-        "Fila": [c for c in chamados if c.status == StatusChamado.FILA],
-        "Em Andamento": [c for c in chamados if c.status == StatusChamado.EM_ANDAMENTO],
-        "Concluído": [c for c in chamados if c.status == StatusChamado.CONCLUIDO]
+        "Fila": [c for c in chamados_dashboard if c.status == StatusChamado.FILA],
+        "Em Andamento": [c for c in chamados_dashboard if c.status == StatusChamado.EM_ANDAMENTO],
+        "Concluído": [c for c in chamados_dashboard if c.status == StatusChamado.CONCLUIDO]
     }
 
     return templates.TemplateResponse(
@@ -58,20 +71,67 @@ async def pg_chamados_dashboard(
         name="chamados/dashboard.html",
         context={
             "request": request,
-            "chamados": chamados,
+            "chamados": chamados_dashboard,
             "grupos": grupos,
             "setores": setores,
             "indicadores": {
-                "total": total,
+                "total": total_dashboard,
                 "em_aberto": em_aberto,
                 "concluidos_hoje": concluidos_hoje
             },
             "filtros": {
                 "busca": busca,
                 "status": status,
+                "tipo": tipo,
                 "dificuldade": dificuldade
             },
             "status_options": [s.value for s in StatusChamado],
+            "tipo_options": [t.value for t in TipoChamado],
+            "dificuldade_options": [d.value for d in Dificuldade],
+            "apenas_hoje": True
+        }
+    )
+
+@router.get("/lista", response_class=HTMLResponse, name="chamados_lista")
+async def pg_chamados_lista(
+    request: Request,
+    busca: Optional[str] = None,
+    status: Optional[str] = None,
+    tipo: Optional[str] = None,
+    dificuldade: Optional[str] = None
+):
+    chamados = listar_chamados()
+    setores = listar_setores()
+    
+    # Filtros
+    if busca:
+        busca = busca.lower()
+        chamados = [c for c in chamados if busca in c.solicitante.lower() or busca in c.setor_loja.lower()]
+    if status:
+        chamados = [c for c in chamados if c.status == status]
+    if tipo:
+        chamados = [c for c in chamados if c.tipo == tipo]
+    if dificuldade:
+        chamados = [c for c in chamados if c.dificuldade == dificuldade]
+
+    # Ordenar por data (mais recentes primeiro)
+    chamados.sort(key=lambda x: x.data_registro, reverse=True)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="chamados/lista.html",
+        context={
+            "request": request,
+            "chamados": chamados,
+            "setores": setores,
+            "filtros": {
+                "busca": busca,
+                "status": status,
+                "tipo": tipo,
+                "dificuldade": dificuldade
+            },
+            "status_options": [s.value for s in StatusChamado],
+            "tipo_options": [t.value for t in TipoChamado],
             "dificuldade_options": [d.value for d in Dificuldade]
         }
     )
@@ -87,6 +147,7 @@ async def pg_form_novo_chamado(request: Request):
             "setores": setores,
             "hoje": datetime.now().strftime("%Y-%m-%dT%H:%M"),
             "status_options": [s.value for s in StatusChamado],
+            "tipo_options": [t.value for t in TipoChamado],
             "dificuldade_options": [d.value for d in Dificuldade]
         }
     )
@@ -96,6 +157,7 @@ async def pg_criar_chamado(
     request: Request,
     setor_loja: str = Form(...),
     solicitante: str = Form(...),
+    tipo: str = Form(TipoChamado.CHAMADO.value),
     dificuldade: str = Form(...),
     descricao: str = Form(...),
     status: str = Form(StatusChamado.FILA.value),
@@ -115,6 +177,7 @@ async def pg_criar_chamado(
         payload = ChamadoCreate(
             setor_loja=setor_loja,
             solicitante=solicitante,
+            tipo=TipoChamado(tipo),
             dificuldade=Dificuldade(dificuldade),
             descricao=descricao,
             status=StatusChamado(status),
@@ -134,6 +197,7 @@ async def pg_criar_chamado(
                 "erro": str(e),
                 "hoje": data_registro,
                 "status_options": [s.value for s in StatusChamado],
+                "tipo_options": [t.value for t in TipoChamado],
                 "dificuldade_options": [d.value for d in Dificuldade]
             }
         )
@@ -142,6 +206,7 @@ async def pg_criar_chamado(
 async def pg_exportar_chamados(
     busca: Optional[str] = None,
     status: Optional[str] = None,
+    tipo: Optional[str] = None,
     dificuldade: Optional[str] = None
 ):
     chamados = listar_chamados()
@@ -151,6 +216,8 @@ async def pg_exportar_chamados(
         chamados = [c for c in chamados if busca in c.solicitante.lower() or busca in c.setor_loja.lower()]
     if status:
         chamados = [c for c in chamados if c.status == status]
+    if tipo:
+        chamados = [c for c in chamados if c.tipo == tipo]
     if dificuldade:
         chamados = [c for c in chamados if c.dificuldade == dificuldade]
 
@@ -161,6 +228,7 @@ async def pg_exportar_chamados(
             "ID": c.id,
             "Setor/Loja": c.setor_loja,
             "Solicitante": c.solicitante,
+            "Tipo": c.tipo.value,
             "Dificuldade": c.dificuldade.value,
             "Status": c.status.value,
             "Data Registro": c.data_registro.strftime("%d/%m/%Y %H:%M"),
@@ -198,6 +266,7 @@ async def pg_form_editar_chamado(request: Request, id: str):
             "setores": setores,
             "hoje": chamado.data_registro.strftime("%Y-%m-%dT%H:%M"),
             "status_options": [s.value for s in StatusChamado],
+            "tipo_options": [t.value for t in TipoChamado],
             "dificuldade_options": [d.value for d in Dificuldade]
         }
     )
@@ -208,6 +277,7 @@ async def pg_editar_chamado(
     id: str,
     setor_loja: str = Form(...),
     solicitante: str = Form(...),
+    tipo: str = Form(TipoChamado.CHAMADO.value),
     dificuldade: str = Form(...),
     descricao: str = Form(...),
     resolucao: Optional[str] = Form(None),
@@ -231,6 +301,7 @@ async def pg_editar_chamado(
         payload = ChamadoUpdate(
             setor_loja=setor_loja,
             solicitante=solicitante,
+            tipo=TipoChamado(tipo),
             dificuldade=Dificuldade(dificuldade),
             descricao=descricao,
             resolucao=resolucao,
@@ -255,6 +326,7 @@ async def pg_editar_chamado(
                 "erro": str(e),
                 "hoje": data_registro,
                 "status_options": [s.value for s in StatusChamado],
+                "tipo_options": [t.value for t in TipoChamado],
                 "dificuldade_options": [d.value for d in Dificuldade]
             }
         )

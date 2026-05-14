@@ -2,8 +2,9 @@
 # Execute com: python main.py  OU  uvicorn main:app --reload
 
 import uvicorn
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Query
 from fastapi.staticfiles import StaticFiles
+from typing import Optional
 from pathlib import Path
 
 # Garante que os diretórios existam
@@ -83,27 +84,32 @@ def ping():
 from crud.crud_chamados import buscar_chamado, atualizar_chamado
 from models.chamado import StatusChamado, ChamadoUpdate
 
-from fastapi import Query
 
 @app.post("/chamados/avancar-emergencial", include_in_schema=False)
-async def avancar_chamado_emergencial(id: str = Query(...)):
+async def avancar_chamado_emergencial(id: str = Query(...), resolucao: Optional[str] = Query(None)):
     chamado = buscar_chamado(id)
     if not chamado:
         return {"status": "erro", "msg": "Chamado não encontrado"}
     
-    status_atual = chamado.status.value if hasattr(chamado.status, 'value') else chamado.status
+    status_atual = chamado.status
     novo_status = status_atual
     
-    if status_atual == "Fila":
-        novo_status = "Em Andamento"
-    elif status_atual == "Em Andamento":
-        novo_status = "Concluído"
+    if status_atual == StatusChamado.FILA:
+        novo_status = StatusChamado.EM_ANDAMENTO
+    elif status_atual == StatusChamado.EM_ANDAMENTO:
+        novo_status = StatusChamado.CONCLUIDO
     
     if novo_status != status_atual:
-        payload = ChamadoUpdate(status=StatusChamado(novo_status))
-        atualizar_chamado(id, payload)
+        update_data = {"status": novo_status}
+        if resolucao:
+            update_data["resolucao"] = resolucao
+            
+        payload = ChamadoUpdate(**update_data)
+        updated = atualizar_chamado(id, payload)
+        if not updated:
+            return {"status": "erro", "msg": "Falha ao atualizar chamado no banco"}
         
-    return {"status": "ok"}
+    return {"status": "ok", "id": id, "novo_status": novo_status}
 
 @app.post("/chamados/voltar-emergencial", include_in_schema=False)
 async def voltar_chamado_emergencial(id: str = Query(...)):

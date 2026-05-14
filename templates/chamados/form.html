@@ -42,6 +42,16 @@
                     </div>
                 </div>
 
+                <!-- Tipo -->
+                <div>
+                    <label for="tipo" class="block text-sm font-semibold text-slate-300 mb-2">Tipo *</label>
+                    <select id="tipo" name="tipo" class="input-glass" required>
+                        {% for opt in tipo_options %}
+                        <option value="{{ opt }}" {% if chamado and chamado.tipo.value == opt %}selected{% endif %}>{{ opt }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
                 <!-- Solicitante -->
                 <div>
                     <label for="solicitante" class="block text-sm font-semibold text-slate-300 mb-2">Solicitante *</label>

@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block title %}Lista Geral de Chamados - MaqControl{% endblock %}
+
+{% block extra_head %}
+<style>
+    .table-container {
+        overflow-x: auto;
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 8px;
+    }
+    
+    th {
+        text-align: left;
+        padding: 12px 20px;
+        color: #94a3b8;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+    }
+    
+    td {
+        padding: 16px 20px;
+        background: rgba(255, 255, 255, 0.03);
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        color: #f1f5f9;
+        font-size: 0.875rem;
+    }
+    
+    tr td:first-child {
+        border-left: 1px solid rgba(255, 255, 255, 0.05);
+        border-top-left-radius: 16px;
+        border-bottom-left-radius: 16px;
+    }
+    
+    tr td:last-child {
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+        border-top-right-radius: 16px;
+        border-bottom-right-radius: 16px;
+    }
+    
+    tr:hover td {
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(34, 197, 94, 0.2);
+    }
+
+    .status-badge {
+        padding: 4px 10px;
+        border-radius: 9999px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        display: inline-block;
+    }
+    .status-fila { background: rgba(107, 114, 128, 0.2); color: #d1d5db; border: 1px solid rgba(107, 114, 128, 0.4); }
+    .status-andamento { background: rgba(245, 158, 11, 0.2); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .status-concluido { background: rgba(34, 197, 94, 0.2); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.4); }
+    
+    .dificuldade-baixa { color: #86efac; }
+    .dificuldade-media { color: #fcd34d; }
+    .dificuldade-alta { color: #fb923c; }
+    .dificuldade-critica { color: #f87171; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="fade-up">
+    <!-- Cabeçalho -->
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-10">
+        <div class="flex-1">
+            <div class="flex items-center gap-3 mb-2">
+                <h1 class="text-4xl font-extrabold text-white tracking-tight">Histórico de Chamados</h1>
+                <div class="flex items-center gap-1.5 bg-verde-500/10 text-verde-400 text-[10px] font-black uppercase px-2.5 py-1 rounded-full border border-verde-500/20">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                    Arquivo Geral
+                </div>
+            </div>
+            <p class="text-slate-400 text-sm md:text-base max-w-xl">Acesso completo ao banco de dados de solicitações e resoluções do sistema.</p>
+        </div>
+        
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+            <a href="/chamados/" class="btn-secondary group flex items-center justify-center gap-2 py-3 px-6 glass hover:bg-white/10 transition-all duration-300">
+                <svg class="w-5 h-5 text-amber-400 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 15l-3-3m0 0l3-3m-3 3h8M3 12a9 9 0 1118 0 8.959 8.959 0 01-9 9m9-9H3"/>
+                </svg>
+                <span class="font-bold">Voltar para Hoje</span>
+            </a>
+            
+            <a href="/chamados/novo" class="btn-primary flex items-center justify-center gap-2 py-3 px-8 shadow-lg shadow-verde-500/20 hover:shadow-verde-500/40 transition-all">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+                </svg>
+                <span class="font-bold">Novo Chamado</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtros e Busca -->
+    <div class="glass p-6 rounded-2xl mb-8">
+        <form method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="md:col-span-1">
+                <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Buscar</label>
+                <div class="relative">
+                    <input type="text" name="busca" value="{{ filtros.busca or '' }}" placeholder="Solicitante ou Loja..." class="input-glass pl-10">
+                    <svg class="w-5 h-5 absolute left-3 top-2.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </div>
+            </div>
+            
+            <div>
+                <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Status</label>
+                <select name="status" class="input-glass">
+                    <option value="">Todos</option>
+                    {% for opt in status_options %}
+                    <option value="{{ opt }}" {% if filtros.status == opt %}selected{% endif %}>{{ opt }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Dificuldade</label>
+                <select name="dificuldade" class="input-glass">
+                    <option value="">Todas</option>
+                    {% for opt in dificuldade_options %}
+                    <option value="{{ opt }}" {% if filtros.dificuldade == opt %}selected{% endif %}>{{ opt }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div>
+                <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Tipo</label>
+                <select name="tipo" class="input-glass">
+                    <option value="">Todos</option>
+                    {% for opt in tipo_options %}
+                    <option value="{{ opt }}" {% if filtros.tipo == opt %}selected{% endif %}>{{ opt }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="flex items-end gap-2">
+                <button type="submit" class="btn-primary flex-1 justify-center">
+                    Filtrar Resultados
+                </button>
+                <a href="/chamados/exportar?busca={{ filtros.busca or '' }}&tipo={{ filtros.tipo or '' }}&dificuldade={{ filtros.dificuldade or '' }}&status={{ filtros.status or '' }}" class="btn-secondary p-2.5" title="Exportar para Excel">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Tabela de Chamados -->
+    <div class="glass p-6 rounded-3xl overflow-hidden">
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Data/Hora</th>
+                        <th>Tipo</th>
+                        <th>Solicitante / Setor</th>
+                        <th>Descrição</th>
+                        <th>Status</th>
+                        <th>Dificuldade</th>
+                        <th class="text-right">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in chamados %}
+                    <tr>
+                        <td class="whitespace-nowrap">
+                            <p class="font-bold text-white">{{ c.data_registro.strftime('%d/%m/%Y') }}</p>
+                            <p class="text-xs text-slate-500">{{ c.data_registro.strftime('%H:%M') }}</p>
+                        </td>
+                        <td>
+                            <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded-md {% if c.tipo.value == 'Demanda' %}bg-blue-500/20 text-blue-400 border border-blue-500/30{% else %}bg-slate-500/20 text-slate-400 border border-slate-500/30{% endif %}">
+                                {{ c.tipo.value }}
+                            </span>
+                        </td>
+                        <td>
+                            <p class="font-bold text-white">{{ c.solicitante }}</p>
+                            <p class="text-xs text-verde-400 font-semibold uppercase">{{ c.setor_loja }}</p>
+                        </td>
+                        <td class="max-w-xs">
+                            <p class="text-sm text-slate-300 line-clamp-1" title="{{ c.descricao }}">{{ c.descricao }}</p>
+                            {% if c.resolucao %}
+                            <p class="text-[10px] text-verde-500 italic mt-1 line-clamp-1" title="{{ c.resolucao }}">Solução: {{ c.resolucao }}</p>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="status-badge {% if c.status.value == 'Fila' %}status-fila{% elif c.status.value == 'Em Andamento' %}status-andamento{% else %}status-concluido{% endif %}">
+                                {{ c.status.value }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="text-xs font-bold {% if c.dificuldade.value == 'Baixa' %}dificuldade-baixa{% elif c.dificuldade.value == 'Média' %}dificuldade-media{% elif c.dificuldade.value == 'Alta' %}dificuldade-alta{% else %}dificuldade-critica{% endif %}">
+                                {{ c.dificuldade.value }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="flex justify-end gap-3">
+                                <a href="/chamados/{{ c.id }}/editar" class="text-amber-400/60 hover:text-amber-400 transition-colors" title="Editar">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                    </svg>
+                                </a>
+                                <form action="/chamados/{{ c.id }}/deletar" method="POST" onsubmit="return confirm('Excluir este chamado permanentemente?')">
+                                    <button type="submit" class="text-red-400/60 hover:text-red-400 transition-colors">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        </svg>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center py-12 text-slate-500 italic">
+                            Nenhum chamado encontrado com os filtros aplicados.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

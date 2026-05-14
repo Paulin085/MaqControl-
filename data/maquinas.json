@@ -40,9 +40,9 @@
   {
     "id": "4726d8e1-fb38-4c73-88bd-007fbb125ba5",
     "data_cadastro": "2026-04-16",
-    "ultima_manutencao": null,
-    "proxima_manutencao": null,
-    "status": "Sem Registro de Manutenção",
+    "ultima_manutencao": "2026-05-12",
+    "proxima_manutencao": "2026-08-10",
+    "status": "OK",
     "nome": "T.I-VANESSA",
     "tipo": "PC Desktop",
     "setor_id": "9f782667-9359-4984-9b28-2376545393d9",
