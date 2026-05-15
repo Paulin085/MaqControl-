@@ -23,7 +23,7 @@ app.mount("/static", StaticFiles(directory="static"),
         name="static")
 
 # ── Routers ──────────────────────────────────────────────────────────────────
-from routers import dashboard, maquinas, setores, manutencoes, relatorios, auth, chamados
+from routers import dashboard, maquinas, setores, manutencoes, relatorios, auth, chamados, admin
 app.include_router(dashboard.router)
 app.include_router(maquinas.router)
 app.include_router(setores.router)
@@ -31,11 +31,14 @@ app.include_router(manutencoes.router)
 app.include_router(relatorios.router)
 app.include_router(auth.router)
 app.include_router(chamados.router)
+app.include_router(admin.router)
 
 # ── Tratamento de erros e Segurança ────────────────────────────────────────────
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
 templates = Jinja2Templates(directory="templates")
+
+from crud.users import get_user_by_id
 
 @app.middleware("http")
 async def verify_authentication(request: Request, call_next):
@@ -50,13 +53,18 @@ async def verify_authentication(request: Request, call_next):
 
     # Checa o cookie
     session_token = request.cookies.get("maqcontrol_auth")
-    if not session_token or session_token != "token_valido_admin":
-        return RedirectResponse(url="/login",
-        status_code=303)
+    if not session_token:
+        return RedirectResponse(url="/login", status_code=303)
+        
+    user = get_user_by_id(session_token)
+    if not user:
+        return RedirectResponse(url="/login", status_code=303)
+        
+    request.state.user = user
 
     # Renova o cookie por mais 30 minutos (Inatividade)
     response = await call_next(request)
-    response.set_cookie(key="maqcontrol_auth", value="token_valido_admin", httponly=True, max_age=1800)
+    response.set_cookie(key="maqcontrol_auth", value=session_token, httponly=True, max_age=1800)
     return response
 
 @app.exception_handler(404)

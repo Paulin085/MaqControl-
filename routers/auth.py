@@ -1,13 +1,13 @@
-# routers/auth.py — Rota de Autenticação Visual e Simulação
+# routers/auth.py — Rota de Autenticação Visual e Real
 from fastapi import APIRouter, Request, Form
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse
+from crud.users import get_user_by_email, verify_password
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
-@router.get("/login",
-        name="login")
+@router.get("/login", name="login")
 async def login_get(request: Request):
     """Renderiza a página de login visual."""
     return templates.TemplateResponse(request=request,
@@ -17,12 +17,14 @@ async def login_get(request: Request):
 
 @router.post("/login")
 async def login_post(request: Request, email: str = Form(...), password: str = Form(...)):
-    """Simulação de login com usuário e senha fixos (admin/admin)."""
-    if email == "admin" and password == "admin":
-        # Simulando sucesso - Redirecionando para Dashboard (HTTP 302/303)
-        response = RedirectResponse(url="/",
-        status_code=303)
-        response.set_cookie(key="maqcontrol_auth", value="token_valido_admin", httponly=True, max_age=1800)
+    """Validação de login com usuário real armazenado em users.json."""
+    user = get_user_by_email(email)
+    
+    if user and verify_password(password, user.hashed_password):
+        # Sucesso - Redirecionando para Dashboard
+        response = RedirectResponse(url="/", status_code=303)
+        # O cookie agora guarda o ID do usuário
+        response.set_cookie(key="maqcontrol_auth", value=user.id, httponly=True, max_age=86400)
         return response
     else:
         # Usuário/Senha inválidos
@@ -30,16 +32,14 @@ async def login_post(request: Request, email: str = Form(...), password: str = F
         name="login.html",
         context={
                 "request": request, 
-                "error": "Email ou senha inválidos. Tente admin / admin"
+                "error": "Email ou senha inválidos."
             },
         status_code=401
         )
 
-@router.get("/logout",
-        name="logout")
+@router.get("/logout", name="logout")
 async def logout():
     """Limpa o cookie de sessão e redireciona para o login."""
-    response = RedirectResponse(url="/login",
-        status_code=303)
+    response = RedirectResponse(url="/login", status_code=303)
     response.delete_cookie("maqcontrol_auth")
     return response

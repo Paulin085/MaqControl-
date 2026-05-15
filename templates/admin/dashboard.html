@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Painel de Controle - MaqControl{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-6 fade-up">
+    <!-- Cabeçalho -->
+    <div class="glass p-6 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-verde-400">Painel de Controle</h1>
+            <p class="text-slate-400 text-sm mt-1">Configurações globais e gestão do sistema</p>
+        </div>
+    </div>
+
+    <!-- Cards de Resumo -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="glass p-6 rounded-2xl">
+            <h3 class="text-lg font-semibold text-slate-300">Total de Usuários</h3>
+            <p class="text-4xl font-bold text-verde-400 mt-2">{{ total_users }}</p>
+        </div>
+    </div>
+
+    <!-- Módulos Administrativos -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8">
+        
+        <!-- Gestão de Usuários -->
+        <a href="/admin/users" class="glass p-6 rounded-2xl flex items-center gap-4 hover:bg-white/5 transition-all">
+            <div class="p-4 bg-verde-500/20 text-verde-400 rounded-xl">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+            </div>
+            <div>
+                <h3 class="text-xl font-bold text-white">Gestão de Usuários</h3>
+                <p class="text-sm text-slate-400 mt-1">Criar, editar acessos e permissões do sistema.</p>
+            </div>
+        </a>
+
+        <!-- Gestão de Máquinas -->
+        <a href="/maquinas/" class="glass p-6 rounded-2xl flex items-center gap-4 hover:bg-white/5 transition-all">
+            <div class="p-4 bg-blue-500/20 text-blue-400 rounded-xl">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+            </div>
+            <div>
+                <h3 class="text-xl font-bold text-white">Gestão de Máquinas</h3>
+                <p class="text-sm text-slate-400 mt-1">Acesso direto ao controle de máquinas do sistema.</p>
+            </div>
+        </a>
+
+        <!-- Gestão de Setores -->
+        <a href="/setores/" class="glass p-6 rounded-2xl flex items-center gap-4 hover:bg-white/5 transition-all">
+            <div class="p-4 bg-purple-500/20 text-purple-400 rounded-xl">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+            </div>
+            <div>
+                <h3 class="text-xl font-bold text-white">Gestão de Setores</h3>
+                <p class="text-sm text-slate-400 mt-1">Configurar e organizar os setores da empresa.</p>
+            </div>
+        </a>
+
+        <!-- Relatórios -->
+        <a href="/relatorios/" class="glass p-6 rounded-2xl flex items-center gap-4 hover:bg-white/5 transition-all">
+            <div class="p-4 bg-yellow-500/20 text-yellow-400 rounded-xl">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+            </div>
+            <div>
+                <h3 class="text-xl font-bold text-white">Relatórios (Exportação)</h3>
+                <p class="text-sm text-slate-400 mt-1">Extração de dados em Excel (Máquinas, Chamados, Usuários).</p>
+            </div>
+        </a>
+
+    </div>
+</div>
+{% endblock %}

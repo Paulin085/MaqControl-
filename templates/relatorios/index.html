@@ -2,13 +2,28 @@
 {% block title %}Relatórios — MaqControl{% endblock %}
 
 {% block content %}
-<div class="fade-up max-w-2xl mx-auto">
-  <div class="mb-6">
-    <h1 class="text-2xl font-bold text-white">Relatórios</h1>
-    <p class="text-slate-400 text-sm mt-1">Exporte dados do parque de máquinas em formato Excel</p>
+<div class="fade-up max-w-3xl mx-auto">
+  <div class="mb-6 flex items-center gap-3">
+    <a href="/admin/" class="text-slate-400 hover:text-verde-400 transition" title="Voltar ao Painel de Controle">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+    </a>
+    <div>
+        <h1 class="text-2xl font-bold text-white">Exportação de Relatórios</h1>
+        <p class="text-slate-400 text-sm mt-1">Extraia dados da aplicação em formato Excel</p>
+    </div>
   </div>
 
-  <div class="glass rounded-2xl p-6">
+  <!-- Navegação de Abas -->
+  <div class="flex gap-2 mb-6 border-b border-white/10 pb-2">
+      <button onclick="switchTab('maquinas')" id="tab-maquinas" class="px-4 py-2 text-sm font-semibold rounded-lg bg-verde-500/20 text-verde-400 border border-verde-500/30 transition">Máquinas</button>
+      <button onclick="switchTab('chamados')" id="tab-chamados" class="px-4 py-2 text-sm font-medium rounded-lg text-slate-400 hover:bg-white/5 transition">Chamados</button>
+      <button onclick="switchTab('usuarios')" id="tab-usuarios" class="px-4 py-2 text-sm font-medium rounded-lg text-slate-400 hover:bg-white/5 transition">Usuários</button>
+  </div>
+
+  <!-- Aba Máquinas -->
+  <div id="panel-maquinas" class="glass rounded-2xl p-6">
     <form method="post" action="/relatorios/exportar-excel" class="space-y-5">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <!-- Filtro Setor -->
@@ -78,10 +93,95 @@
       <div class="pt-2">
         <button type="submit" class="btn-primary w-full justify-center">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-          Exportar Excel
+          Exportar Máquinas
         </button>
       </div>
     </form>
   </div>
+
+  <!-- Aba Chamados -->
+  <div id="panel-chamados" class="glass rounded-2xl p-6 hidden">
+    <form method="post" action="/relatorios/exportar-chamados" class="space-y-5">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Filtro Status -->
+        <div>
+          <label class="text-xs text-slate-400 mb-1 block">Status do Chamado</label>
+          <select name="status" class="input-glass">
+            <option value="">Todos os status</option>
+            <option value="Fila">Fila</option>
+            <option value="Em Andamento">Em Andamento</option>
+            <option value="Concluído">Concluído</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Seleção de campos Chamados -->
+      <div>
+        <p class="text-xs text-slate-400 mb-3">Campos a exportar <span class="text-slate-600">(deixe vazio para exportar todos)</span></p>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+          {% set campos_chamados = [
+            ("id", "ID"),
+            ("setor_loja", "Setor/Loja"),
+            ("solicitante", "Solicitante"),
+            ("tipo", "Tipo"),
+            ("dificuldade", "Dificuldade"),
+            ("descricao", "Descrição"),
+            ("resolucao", "Resolução"),
+            ("status", "Status"),
+            ("data_registro", "Data de Registro")
+          ] %}
+          {% for val, label in campos_chamados %}
+          <label class="flex items-center gap-2 text-sm text-slate-300 cursor-pointer hover:text-white transition-colors">
+            <input type="checkbox" name="campos" value="{{ val }}" checked
+              class="w-3.5 h-3.5 accent-blue-500 cursor-pointer"/>
+            {{ label }}
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="pt-2">
+        <button type="submit" class="btn-primary w-full justify-center bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 border-none">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Exportar Chamados
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Aba Usuários -->
+  <div id="panel-usuarios" class="glass rounded-2xl p-6 hidden">
+    <form method="post" action="/relatorios/exportar-usuarios" class="space-y-5">
+      <p class="text-slate-300 text-sm">Gere um relatório contendo todos os usuários cadastrados e seus respectivos acessos/permissões.</p>
+      <div class="pt-2">
+        <button type="submit" class="btn-primary w-full justify-center bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 border-none">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Exportar Usuários
+        </button>
+      </div>
+    </form>
+  </div>
+
 </div>
+
+<script>
+    function switchTab(tab) {
+        // Esconder todos os paineis
+        document.getElementById('panel-maquinas').classList.add('hidden');
+        document.getElementById('panel-chamados').classList.add('hidden');
+        document.getElementById('panel-usuarios').classList.add('hidden');
+        
+        // Resetar estilos das abas
+        const tabs = ['maquinas', 'chamados', 'usuarios'];
+        tabs.forEach(t => {
+            const el = document.getElementById('tab-' + t);
+            el.className = 'px-4 py-2 text-sm font-medium rounded-lg text-slate-400 hover:bg-white/5 transition';
+        });
+        
+        // Ativar aba clicada
+        document.getElementById('panel-' + tab).classList.remove('hidden');
+        const activeEl = document.getElementById('tab-' + tab);
+        activeEl.className = 'px-4 py-2 text-sm font-semibold rounded-lg bg-verde-500/20 text-verde-400 border border-verde-500/30 transition';
+    }
+</script>
 {% endblock %}
