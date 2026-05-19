@@ -85,6 +85,12 @@
         </div>
         
         <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+            <button onclick="document.getElementById('search-panel').classList.toggle('hidden')" class="btn-secondary flex items-center justify-center p-3 glass hover:bg-white/10 transition-all duration-300" title="Buscar / Filtrar">
+                <svg class="w-5 h-5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+            </button>
+
             <a href="/chamados/" class="btn-secondary group flex items-center justify-center gap-2 py-3 px-6 glass hover:bg-white/10 transition-all duration-300">
                 <svg class="w-5 h-5 text-amber-400 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 15l-3-3m0 0l3-3m-3 3h8M3 12a9 9 0 1118 0 8.959 8.959 0 01-9 9m9-9H3"/>
@@ -102,7 +108,7 @@
     </div>
 
     <!-- Filtros e Busca -->
-    <div class="glass p-6 rounded-2xl mb-8">
+    <div id="search-panel" class="glass p-6 rounded-2xl mb-8 hidden transition-all duration-300">
         <form method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div class="md:col-span-1">
                 <label class="block text-xs font-semibold text-slate-400 uppercase mb-2">Buscar</label>

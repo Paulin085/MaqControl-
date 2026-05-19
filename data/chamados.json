@@ -610,5 +610,29 @@
     "data_registro": "2026-05-19 14:38:00",
     "anexo_path": null,
     "id": "2f14c637-5f87-462c-b314-0fc19a859cd6"
+  },
+  {
+    "setor_loja": "Financeiro",
+    "solicitante": "Jean",
+    "tipo": "Chamado",
+    "dificuldade": "Baixa",
+    "descricao": "Monitor desligando.",
+    "resolucao": "Cabo com mal contato.",
+    "status": "Concluído",
+    "data_registro": "2026-05-19 17:35:00",
+    "anexo_path": null,
+    "id": "fa9df7f3-7cda-4009-a80e-b15a2ef7d959"
+  },
+  {
+    "setor_loja": "URGENTE",
+    "solicitante": "URGENTE",
+    "tipo": "Demanda",
+    "dificuldade": "Crítica",
+    "descricao": "Consertar a importação do inventário.\r\nQue subiu com 3 decimais.",
+    "resolucao": null,
+    "status": "Fila",
+    "data_registro": "2026-05-19 18:10:00",
+    "anexo_path": null,
+    "id": "f622189c-f770-4634-a14b-3b51056dac82"
   }
 ]
