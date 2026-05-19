@@ -161,6 +161,7 @@ async def pg_criar_chamado(
     dificuldade: str = Form(...),
     descricao: str = Form(...),
     status: str = Form(StatusChamado.FILA.value),
+    resolucao: Optional[str] = Form(None),
     data_registro: str = Form(...),
     anexo: Optional[UploadFile] = File(None)
 ):
@@ -181,6 +182,7 @@ async def pg_criar_chamado(
             dificuldade=Dificuldade(dificuldade),
             descricao=descricao,
             status=StatusChamado(status),
+            resolucao=resolucao,
             data_registro=datetime.fromisoformat(data_registro),
             anexo_path=anexo_path
         )

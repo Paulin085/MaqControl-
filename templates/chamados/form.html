@@ -91,13 +91,11 @@
                 <textarea id="descricao" name="descricao" rows="4" class="input-glass" placeholder="Descreva detalhadamente o que está ocorrendo..." required>{{ chamado.descricao if chamado else '' }}</textarea>
             </div>
 
-            <!-- Resolução (Apenas se já existir chamado) -->
-            {% if chamado %}
-            <div>
-                <label for="resolucao" class="block text-sm font-semibold text-slate-300 mb-2">Resolução / Solução Aplicada</label>
-                <textarea id="resolucao" name="resolucao" rows="3" class="input-glass border-verde-500/30" placeholder="Descreva o que foi feito para resolver...">{{ chamado.resolucao if chamado.resolucao else '' }}</textarea>
+            <!-- Resolução (Mostrada dinamicamente) -->
+            <div id="div-resolucao" style="display: none;">
+                <label for="resolucao" class="block text-sm font-semibold text-slate-300 mb-2">Resolução / Solução Aplicada <span id="resolucao-asterisco" class="text-red-400">*</span></label>
+                <textarea id="resolucao" name="resolucao" rows="3" class="input-glass border-verde-500/30" placeholder="Descreva o que foi feito para resolver...">{{ chamado.resolucao if chamado and chamado.resolucao else '' }}</textarea>
             </div>
-            {% endif %}
 
             <!-- Anexo -->
             <div>
@@ -157,6 +155,27 @@
             display.textContent = 'Clique para selecionar ou arraste um arquivo';
             display.classList.remove('text-verde-400');
         }
+    }
+
+    // Toggle para campo de Resolução baseado no Status
+    const statusSelect = document.getElementById('status');
+    const divResolucao = document.getElementById('div-resolucao');
+    const textareaResolucao = document.getElementById('resolucao');
+
+    function toggleResolucao() {
+        if (statusSelect && statusSelect.value === 'Concluído') {
+            divResolucao.style.display = 'block';
+            textareaResolucao.required = true;
+        } else {
+            divResolucao.style.display = 'none';
+            textareaResolucao.required = false;
+        }
+    }
+
+    if (statusSelect) {
+        statusSelect.addEventListener('change', toggleResolucao);
+        // Inicializa no carregamento da página
+        toggleResolucao();
     }
 </script>
 {% endblock %}

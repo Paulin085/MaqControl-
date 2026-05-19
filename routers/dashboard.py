@@ -1,9 +1,9 @@
-# routers/dashboard.py — Rota principal / dashboard
 from fastapi import APIRouter, Request
 from fastapi.templating import Jinja2Templates
 from datetime import date
 
 from crud import listar_maquinas, listar_setores
+from crud.crud_chamados import listar_chamados
 from models.maquina import StatusMaquina
 
 # Todos os status possíveis na ordem exibida no heatmap
@@ -22,8 +22,15 @@ def _resumo_dashboard():
     """Monta os dados consolidados para o dashboard."""
     maquinas = listar_maquinas()
     setores  = listar_setores()
+    chamados = listar_chamados()
 
     total = len(maquinas)
+
+    # KPIs de Chamados
+    hoje = date.today()
+    total_chamados = len(chamados)
+    chamados_abertos = len([c for c in chamados if c.status.value != 'Concluído'])
+    chamados_concluidos_hoje = len([c for c in chamados if c.status.value == 'Concluído' and c.data_registro.date() == hoje])
 
     # Contagem por status
     contagem_status = {s.value: 0 for s in StatusMaquina}
@@ -51,7 +58,6 @@ def _resumo_dashboard():
         setores_status[nome_setor][m.status.value] += 1
 
     # Calendário: eventos de máquinas com próxima manutenção a partir de hoje
-    hoje = date.today()
     eventos_calendario = []
     for m in maquinas:
         if m.proxima_manutencao and m.proxima_manutencao >= hoje:
@@ -116,6 +122,9 @@ def _resumo_dashboard():
         "maquinas_atencao": atencao[:10],  # Top 10
         "setores": setores,
         "total_setores": len(setores),
+        "total_chamados": total_chamados,
+        "chamados_abertos": chamados_abertos,
+        "chamados_concluidos_hoje": chamados_concluidos_hoje,
     }
 
 
