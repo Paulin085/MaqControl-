@@ -24,8 +24,9 @@ class TipoChamado(str, Enum):
 
 # Base model shared fields
 class ChamadoBase(BaseModel):
-    setor_loja: str = Field(..., description="Setor ou loja responsável")
-    solicitante: str = Field(..., description="Nome do solicitante")
+    setor_loja: Optional[str] = Field(None, description="Setor ou loja responsável")
+    solicitante: Optional[str] = Field(None, description="Nome do solicitante")
+    titulo: Optional[str] = Field(None, description="Título da demanda")
     tipo: TipoChamado = Field(TipoChamado.CHAMADO, description="Tipo do registro")
     dificuldade: Dificuldade = Field(..., description="Nível de dificuldade")
     descricao: str = Field(..., description="Descrição detalhada do chamado")
@@ -33,6 +34,7 @@ class ChamadoBase(BaseModel):
     status: StatusChamado = Field(StatusChamado.FILA, description="Status atual")
     data_registro: datetime = Field(default_factory=datetime.utcnow, description="Timestamp de criação")
     anexo_path: Optional[str] = Field(None, description="Caminho relativo ao arquivo de anexo")
+    usuario_id: Optional[str] = Field(None, description="ID do usuário que registrou o chamado")
 
 # Model for creation (id generated automatically)
 class ChamadoCreate(ChamadoBase):
@@ -42,12 +44,14 @@ class ChamadoCreate(ChamadoBase):
 class ChamadoUpdate(BaseModel):
     setor_loja: Optional[str] = None
     solicitante: Optional[str] = None
+    titulo: Optional[str] = None
     tipo: Optional[TipoChamado] = None
     dificuldade: Optional[Dificuldade] = None
     descricao: Optional[str] = None
     resolucao: Optional[str] = None
     status: Optional[StatusChamado] = None
     anexo_path: Optional[str] = None
+    usuario_id: Optional[str] = None
 
 # Full model stored in JSON
 class Chamado(ChamadoBase):

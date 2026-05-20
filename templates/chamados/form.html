@@ -52,21 +52,27 @@
                     </select>
                 </div>
 
+                <!-- Título -->
+                <div id="div-titulo" style="display: none;">
+                    <label for="titulo" class="block text-sm font-semibold text-slate-300 mb-2">Título da Demanda *</label>
+                    <input type="text" id="titulo" name="titulo" value="{{ chamado.titulo if chamado and chamado.titulo else '' }}" class="input-glass" placeholder="Ex: Criação de relatório">
+                </div>
+
                 <!-- Solicitante -->
-                <div>
+                <div id="div-solicitante">
                     <label for="solicitante" class="block text-sm font-semibold text-slate-300 mb-2">Solicitante *</label>
-                    <input type="text" id="solicitante" name="solicitante" value="{{ chamado.solicitante if chamado else '' }}" class="input-glass" placeholder="Nome completo" required>
+                    <input type="text" id="solicitante" name="solicitante" value="{{ chamado.solicitante if chamado and chamado.solicitante else '' }}" class="input-glass" placeholder="Nome completo" required>
                 </div>
 
                 <!-- Setor/Loja -->
-                <div>
+                <div id="div-setor">
                     <label for="setor_loja" class="block text-sm font-semibold text-slate-300 mb-2">Setor ou Loja *</label>
-                    <input type="text" id="setor_loja" name="setor_loja" value="{{ chamado.setor_loja if chamado else '' }}" class="input-glass" placeholder="Ex: Loja 01, TI, RH" required>
+                    <input type="text" id="setor_loja" name="setor_loja" value="{{ chamado.setor_loja if chamado and chamado.setor_loja else '' }}" class="input-glass" placeholder="Ex: Loja 01, TI, RH" required>
                 </div>
 
                 <!-- Dificuldade -->
                 <div>
-                    <label for="dificuldade" class="block text-sm font-semibold text-slate-300 mb-2">Nível de Dificuldade *</label>
+                    <label for="dificuldade" class="block text-sm font-semibold text-slate-300 mb-2">Nível de Atenção *</label>
                     <select id="dificuldade" name="dificuldade" class="input-glass" required>
                         {% for opt in dificuldade_options %}
                         <option value="{{ opt }}" {% if chamado and chamado.dificuldade.value == opt %}selected{% endif %}>{{ opt }}</option>
@@ -176,6 +182,38 @@
         statusSelect.addEventListener('change', toggleResolucao);
         // Inicializa no carregamento da página
         toggleResolucao();
+    }
+
+    // Toggle Demanda
+    const tipoSelect = document.getElementById('tipo');
+    const divSolicitante = document.getElementById('div-solicitante');
+    const divSetor = document.getElementById('div-setor');
+    const divTitulo = document.getElementById('div-titulo');
+    const inputSolicitante = document.getElementById('solicitante');
+    const inputSetor = document.getElementById('setor_loja');
+    const inputTitulo = document.getElementById('titulo');
+
+    function toggleDemanda() {
+        if (tipoSelect && tipoSelect.value === 'Demanda') {
+            divSolicitante.style.display = 'none';
+            divSetor.style.display = 'none';
+            divTitulo.style.display = 'block';
+            inputSolicitante.required = false;
+            inputSetor.required = false;
+            inputTitulo.required = true;
+        } else {
+            divSolicitante.style.display = 'block';
+            divSetor.style.display = 'block';
+            divTitulo.style.display = 'none';
+            inputSolicitante.required = true;
+            inputSetor.required = true;
+            inputTitulo.required = false;
+        }
+    }
+
+    if (tipoSelect) {
+        tipoSelect.addEventListener('change', toggleDemanda);
+        toggleDemanda();
     }
 </script>
 {% endblock %}

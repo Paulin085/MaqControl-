@@ -29,6 +29,10 @@ async def pg_chamados_dashboard(
 ):
     chamados = listar_chamados()
     setores = listar_setores()
+    user = request.state.user
+    
+    if not user.is_admin:
+        chamados = [c for c in chamados if c.usuario_id == user.id]
     
     # Dashboard mostra:
     # 1. Chamados em Fila ou Em Andamento (independente da data)
@@ -48,7 +52,10 @@ async def pg_chamados_dashboard(
     # Filtros
     if busca:
         busca = busca.lower()
-        chamados_dashboard = [c for c in chamados_dashboard if busca in c.solicitante.lower() or busca in c.setor_loja.lower()]
+        chamados_dashboard = [c for c in chamados_dashboard if 
+                              (c.solicitante and busca in c.solicitante.lower()) or 
+                              (c.setor_loja and busca in c.setor_loja.lower()) or
+                              (c.titulo and busca in c.titulo.lower())]
     if status:
         chamados_dashboard = [c for c in chamados_dashboard if c.status == status]
     if tipo:
@@ -102,11 +109,18 @@ async def pg_chamados_lista(
 ):
     chamados = listar_chamados()
     setores = listar_setores()
+    user = request.state.user
+    
+    if not user.is_admin:
+        chamados = [c for c in chamados if c.usuario_id == user.id]
     
     # Filtros
     if busca:
         busca = busca.lower()
-        chamados = [c for c in chamados if busca in c.solicitante.lower() or busca in c.setor_loja.lower()]
+        chamados = [c for c in chamados if 
+                    (c.solicitante and busca in c.solicitante.lower()) or 
+                    (c.setor_loja and busca in c.setor_loja.lower()) or
+                    (c.titulo and busca in c.titulo.lower())]
     if status:
         chamados = [c for c in chamados if c.status == status]
     if tipo:
@@ -155,8 +169,9 @@ async def pg_form_novo_chamado(request: Request):
 @router.post("/novo", name="criar_chamado_post")
 async def pg_criar_chamado(
     request: Request,
-    setor_loja: str = Form(...),
-    solicitante: str = Form(...),
+    setor_loja: Optional[str] = Form(None),
+    solicitante: Optional[str] = Form(None),
+    titulo: Optional[str] = Form(None),
     tipo: str = Form(TipoChamado.CHAMADO.value),
     dificuldade: str = Form(...),
     descricao: str = Form(...),
@@ -178,13 +193,15 @@ async def pg_criar_chamado(
         payload = ChamadoCreate(
             setor_loja=setor_loja,
             solicitante=solicitante,
+            titulo=titulo,
             tipo=TipoChamado(tipo),
             dificuldade=Dificuldade(dificuldade),
             descricao=descricao,
             status=StatusChamado(status),
             resolucao=resolucao,
             data_registro=datetime.fromisoformat(data_registro),
-            anexo_path=anexo_path
+            anexo_path=anexo_path,
+            usuario_id=request.state.user.id
         )
         criar_chamado(payload)
         return RedirectResponse(url="/chamados/", status_code=303)
@@ -206,16 +223,24 @@ async def pg_criar_chamado(
 
 @router.get("/exportar", name="exportar_chamados")
 async def pg_exportar_chamados(
+    request: Request,
     busca: Optional[str] = None,
     status: Optional[str] = None,
     tipo: Optional[str] = None,
     dificuldade: Optional[str] = None
 ):
     chamados = listar_chamados()
+    user = request.state.user
+    
+    if not user.is_admin:
+        chamados = [c for c in chamados if c.usuario_id == user.id]
     
     if busca:
         busca = busca.lower()
-        chamados = [c for c in chamados if busca in c.solicitante.lower() or busca in c.setor_loja.lower()]
+        chamados = [c for c in chamados if 
+                    (c.solicitante and busca in c.solicitante.lower()) or 
+                    (c.setor_loja and busca in c.setor_loja.lower()) or
+                    (c.titulo and busca in c.titulo.lower())]
     if status:
         chamados = [c for c in chamados if c.status == status]
     if tipo:
@@ -228,10 +253,11 @@ async def pg_exportar_chamados(
     for c in chamados:
         data.append({
             "ID": c.id,
-            "Setor/Loja": c.setor_loja,
-            "Solicitante": c.solicitante,
+            "Título": c.titulo or "",
+            "Setor/Loja": c.setor_loja or "",
+            "Solicitante": c.solicitante or "",
             "Tipo": c.tipo.value,
-            "Dificuldade": c.dificuldade.value,
+            "Nível de Atenção": c.dificuldade.value,
             "Status": c.status.value,
             "Data Registro": c.data_registro.strftime("%d/%m/%Y %H:%M"),
             "Descrição": c.descricao,
@@ -258,6 +284,10 @@ async def pg_form_editar_chamado(request: Request, id: str):
     if not chamado:
         raise HTTPException(status_code=404, detail="Chamado não encontrado")
     
+    user = request.state.user
+    if not user.is_admin and chamado.usuario_id != user.id:
+        raise HTTPException(status_code=403, detail="Sem permissão para acessar este chamado")
+    
     setores = listar_setores()
     return templates.TemplateResponse(
         request=request,
@@ -277,8 +307,9 @@ async def pg_form_editar_chamado(request: Request, id: str):
 async def pg_editar_chamado(
     request: Request,
     id: str,
-    setor_loja: str = Form(...),
-    solicitante: str = Form(...),
+    setor_loja: Optional[str] = Form(None),
+    solicitante: Optional[str] = Form(None),
+    titulo: Optional[str] = Form(None),
     tipo: str = Form(TipoChamado.CHAMADO.value),
     dificuldade: str = Form(...),
     descricao: str = Form(...),
@@ -292,6 +323,10 @@ async def pg_editar_chamado(
         if not chamado_atual:
             raise HTTPException(status_code=404, detail="Chamado não encontrado")
 
+        user = request.state.user
+        if not user.is_admin and chamado_atual.usuario_id != user.id:
+            raise HTTPException(status_code=403, detail="Sem permissão para alterar este chamado")
+
         anexo_path = chamado_atual.anexo_path
         if anexo and anexo.filename:
             filename = f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{anexo.filename}"
@@ -303,6 +338,7 @@ async def pg_editar_chamado(
         payload = ChamadoUpdate(
             setor_loja=setor_loja,
             solicitante=solicitante,
+            titulo=titulo,
             tipo=TipoChamado(tipo),
             dificuldade=Dificuldade(dificuldade),
             descricao=descricao,
@@ -334,10 +370,14 @@ async def pg_editar_chamado(
         )
 
 @router.post("/avancar", name="avancar_chamado_post")
-async def pg_avancar_chamado(id: str):
+async def pg_avancar_chamado(request: Request, id: str):
     chamado = buscar_chamado(id)
     if not chamado:
         raise HTTPException(status_code=404, detail="Chamado não encontrado")
+    
+    user = request.state.user
+    if not user.is_admin and chamado.usuario_id != user.id:
+        raise HTTPException(status_code=403, detail="Sem permissão para alterar este chamado")
     
     # Lógica de progressão
     novo_status = chamado.status
@@ -353,6 +393,14 @@ async def pg_avancar_chamado(id: str):
     return RedirectResponse(url="/chamados/", status_code=303)
 
 @router.post("/{id}/deletar", name="deletar_chamado_post")
-async def pg_deletar_chamado(id: str):
+async def pg_deletar_chamado(request: Request, id: str):
+    chamado = buscar_chamado(id)
+    if not chamado:
+        raise HTTPException(status_code=404, detail="Chamado não encontrado")
+        
+    user = request.state.user
+    if not user.is_admin and chamado.usuario_id != user.id:
+        raise HTTPException(status_code=403, detail="Sem permissão para excluir este chamado")
+        
     deletar_chamado(id)
     return RedirectResponse(url="/chamados/", status_code=303)

@@ -12,5 +12,30 @@
             "relatorios",
             "chamados"
         ]
+    },
+    {
+        "name": "Vanessa Fortes",
+        "email": "vanessa",
+        "is_admin": false,
+        "permissions": [
+            "maquinas",
+            "setores",
+            "chamados"
+        ],
+        "id": "7d5130b7-41bf-4144-bc70-e3afa81ec67c",
+        "hashed_password": "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92"
+    },
+    {
+        "name": "Paulo Roberto",
+        "email": "paulo",
+        "is_admin": false,
+        "permissions": [
+            "maquinas",
+            "setores",
+            "chamados",
+            "relatorios"
+        ],
+        "id": "894455dd-8e0e-44cf-968a-887c583b12f8",
+        "hashed_password": "f45bec8ca02513365d2e6b96232e20a11e62e65cdb54e479aa2191e5df3c2f2e"
     }
 ]

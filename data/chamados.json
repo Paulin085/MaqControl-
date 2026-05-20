@@ -9,6 +9,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-11 14:24:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "e73dab1f-6376-4f13-a263-447922fb8fdb"
   },
   {
@@ -21,6 +22,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-12 08:23:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "ea1e70a4-b8f1-472c-ac0d-721d72fc5b9a"
   },
   {
@@ -33,6 +35,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-12 09:11:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "0ed67cee-3fab-4c25-9ff6-b637019356c5"
   },
   {
@@ -45,6 +48,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-12 11:24:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "c1a61352-4874-4710-98d4-e40cd8812bc1"
   },
   {
@@ -57,6 +61,7 @@
     "status": "Fila",
     "data_registro": "2026-05-12 15:05:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "a9bddeaa-b471-44f3-96d9-7dd7c66f0035"
   },
   {
@@ -69,6 +74,7 @@
     "status": "Fila",
     "data_registro": "2026-05-12 15:06:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "e765b159-2f84-4267-b1bb-85aa4c868b6b"
   },
   {
@@ -81,6 +87,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-12 17:06:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "0dd595b0-9f7e-4f5e-b44c-d244fc447b3a"
   },
   {
@@ -93,6 +100,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-12 18:16:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "f8cbe495-4ba5-49b7-9288-d0b75a1c27ae"
   },
   {
@@ -105,6 +113,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-13 09:11:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "c33c6629-0543-45a8-a24b-1f3eef584814"
   },
   {
@@ -117,6 +126,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-13 09:49:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "dcf8029c-9cc9-48b1-9993-7647eda0ba0e"
   },
   {
@@ -129,6 +139,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-13 09:57:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "8e6236e1-9840-4680-84e2-aab53ed7e007"
   },
   {
@@ -141,6 +152,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-13 10:40:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "27a3cdef-9e62-4301-b808-687d6c2bdf9e"
   },
   {
@@ -153,6 +165,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-13 10:50:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "ed356252-793a-48a9-a7a4-a51d0726a513"
   },
   {
@@ -165,6 +178,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-13 12:02:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "b318f57c-4945-4684-a938-dff060ec1976"
   },
   {
@@ -177,6 +191,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-13 14:46:00",
     "anexo_path": "/static/uploads/chamados/20260513144926_IMG_4501.jpeg",
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "930647db-ae84-42ed-863d-0323fd64c2f6"
   },
   {
@@ -189,6 +204,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-13 14:50:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "fdfc10dc-f616-4c9d-9dbc-7004a8ece577"
   },
   {
@@ -201,6 +217,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-13 16:08:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "69541c94-2034-4868-a1bc-82cb0b346e7f"
   },
   {
@@ -213,6 +230,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-13 17:38:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "ef52d6a3-3ed3-4ac3-bc9a-30757d093f4b"
   },
   {
@@ -225,6 +243,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-13 17:38:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "ed389cba-2348-4540-be43-1921415dd969"
   },
   {
@@ -237,6 +256,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-14 08:17:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "f1279686-19bc-43a1-a887-0a7b39f8deef"
   },
   {
@@ -249,6 +269,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-14 11:42:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "97bd6b28-5e94-4661-a3f6-69535bd50bd8"
   },
   {
@@ -261,6 +282,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-14 11:53:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "c5faec6f-99d0-472f-b65d-277d4bd0937e"
   },
   {
@@ -273,6 +295,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-14 17:48:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "92b070ce-15f8-4c0c-bfa7-ef3a8e10fc40"
   },
   {
@@ -285,6 +308,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-14 17:57:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "80179ed2-bfd6-4754-a5ef-daf7755cb5e3"
   },
   {
@@ -297,6 +321,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-14 18:01:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "247bc38e-d0c3-4d2f-9813-c33447191aac"
   },
   {
@@ -309,6 +334,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-14 18:04:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "53ba4755-d2d1-4b2c-8f23-f0fe56a0c721"
   },
   {
@@ -321,6 +347,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-15 09:34:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "d9a302e3-dd35-4142-9e2d-21c54c60fd92"
   },
   {
@@ -333,6 +360,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-15 09:34:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "ea072953-4b0f-4533-93bd-db991ca04f8c"
   },
   {
@@ -345,6 +373,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-15 09:48:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "4df2f611-2a75-4cb5-88ec-5256dc4f4591"
   },
   {
@@ -357,6 +386,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-15 10:31:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "7cb393a1-d2c0-4840-b28f-61fa816d03bf"
   },
   {
@@ -369,6 +399,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-15 10:53:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "cf16da3d-3840-48ef-b37c-1b80f0e6b464"
   },
   {
@@ -381,6 +412,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-15 13:22:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "22046183-bd60-4e12-a2df-85f073982de7"
   },
   {
@@ -393,6 +425,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-15 14:00:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "c58caed9-9dcd-4f9e-a454-cea73f2023c0"
   },
   {
@@ -405,6 +438,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-15 14:06:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "45b5092f-f2e0-4577-9805-d0060e9e01f7"
   },
   {
@@ -417,6 +451,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-15 14:23:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "1472c9e7-0102-4a14-8847-21949ddd681c"
   },
   {
@@ -429,6 +464,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-15 16:13:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "3f2e2e08-9eb8-4ef6-b681-c8e9a628911d"
   },
   {
@@ -441,6 +477,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-18 13:30:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "81f8b053-7a21-43c8-ab91-371acf3bd468"
   },
   {
@@ -453,6 +490,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-18 13:33:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "a4f85c5f-7d63-4dfb-a8cf-915f6992ef04"
   },
   {
@@ -465,6 +503,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-18 13:37:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "89d59258-d075-4c18-9747-77a1e2883d89"
   },
   {
@@ -477,6 +516,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-18 13:42:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "40552874-6e49-4df9-b5c9-ab7ffa7b4575"
   },
   {
@@ -489,6 +529,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-18 13:44:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "f3e56b15-ed98-442f-93f0-32e02279c444"
   },
   {
@@ -501,6 +542,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-18 13:50:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "ba5f7da6-2393-48ae-b6ae-4a53a59e16d0"
   },
   {
@@ -513,6 +555,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-18 13:54:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "ecc6bac3-61e6-4a0b-be9c-70e64f75a2da"
   },
   {
@@ -525,6 +568,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-18 13:55:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "e41b20d5-8cfa-4bd4-8dda-4f7b1f4ce128"
   },
   {
@@ -537,6 +581,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-18 14:00:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "89ecfa9a-d723-4f5b-8de1-2cd78c7ed698"
   },
   {
@@ -549,6 +594,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-18 14:06:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "cb6bb309-c106-418a-af5c-9076594917d5"
   },
   {
@@ -561,6 +607,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-18 14:07:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "751136e2-5ed2-491e-9df4-fd4aac1a432d"
   },
   {
@@ -573,6 +620,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-19 14:29:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "a773834a-66a0-42c0-8948-e56fba5d07c1"
   },
   {
@@ -585,6 +633,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-19 14:35:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "29fd69b4-d271-4660-aab9-6502313c57a4"
   },
   {
@@ -597,6 +646,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-19 14:36:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "9d4fbfdc-8144-4529-8bc4-116fdd0bb07a"
   },
   {
@@ -609,6 +659,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-19 14:38:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "2f14c637-5f87-462c-b314-0fc19a859cd6"
   },
   {
@@ -621,6 +672,7 @@
     "status": "Concluído",
     "data_registro": "2026-05-19 17:35:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "fa9df7f3-7cda-4009-a80e-b15a2ef7d959"
   },
   {
@@ -629,10 +681,37 @@
     "tipo": "Demanda",
     "dificuldade": "Crítica",
     "descricao": "Consertar a importação do inventário.\r\nQue subiu com 3 decimais.",
-    "resolucao": null,
-    "status": "Fila",
+    "resolucao": "Consertado, atualizando a versão do WMS e adicionando novamente o inventário.\n",
+    "status": "Concluído",
     "data_registro": "2026-05-19 18:10:00",
     "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
     "id": "f622189c-f770-4634-a14b-3b51056dac82"
+  },
+  {
+    "setor_loja": "Cadastrp",
+    "solicitante": "Everina",
+    "tipo": "Chamado",
+    "dificuldade": "Alta",
+    "descricao": "Ajustar estoque de produto por inventário.\r\nCOD.PROD - 248033",
+    "resolucao": null,
+    "status": "Em Andamento",
+    "data_registro": "2026-05-20 14:18:00",
+    "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
+    "id": "8f489a92-063a-4698-b0fa-159e505c3539"
+  },
+  {
+    "setor_loja": "financeiro",
+    "solicitante": "amanda",
+    "tipo": "Demanda",
+    "dificuldade": "Baixa",
+    "descricao": "a solicitante, pediu para que criassemos duas salas de reuniões no google Agenda, para que os lideres da nativa, vissem o que tem de sala reservada ou livre para os mesmo reservarem se necessario e ficasse bloqueado. (reuniao e treinamento)",
+    "resolucao": "entrei na conta google da distribuidora, fiz as salas e adiciou os lideres para ter acessoa marcar reuniçoes nas salas.",
+    "status": "Concluído",
+    "data_registro": "2026-05-06 16:05:00",
+    "anexo_path": null,
+    "usuario_id": "7d5130b7-41bf-4144-bc70-e3afa81ec67c",
+    "id": "077cbba3-a813-4b31-91c9-869bffd1a7cd"
   }
 ]

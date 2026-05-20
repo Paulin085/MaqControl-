@@ -94,10 +94,14 @@ from models.chamado import StatusChamado, ChamadoUpdate
 
 
 @app.post("/chamados/avancar-emergencial", include_in_schema=False)
-async def avancar_chamado_emergencial(id: str = Query(...), resolucao: Optional[str] = Query(None)):
+async def avancar_chamado_emergencial(request: Request, id: str = Query(...), resolucao: Optional[str] = Query(None)):
     chamado = buscar_chamado(id)
     if not chamado:
         return {"status": "erro", "msg": "Chamado não encontrado"}
+        
+    user = request.state.user
+    if not user.is_admin and chamado.usuario_id != user.id:
+        return {"status": "erro", "msg": "Sem permissão"}
     
     status_atual = chamado.status
     novo_status = status_atual
@@ -120,10 +124,14 @@ async def avancar_chamado_emergencial(id: str = Query(...), resolucao: Optional[
     return {"status": "ok", "id": id, "novo_status": novo_status}
 
 @app.post("/chamados/voltar-emergencial", include_in_schema=False)
-async def voltar_chamado_emergencial(id: str = Query(...)):
+async def voltar_chamado_emergencial(request: Request, id: str = Query(...)):
     chamado = buscar_chamado(id)
     if not chamado:
         return {"status": "erro", "msg": "Chamado não encontrado"}
+        
+    user = request.state.user
+    if not user.is_admin and chamado.usuario_id != user.id:
+        return {"status": "erro", "msg": "Sem permissão"}
     
     # Força a volta direta para a Fila conforme solicitado
     payload = ChamadoUpdate(status=StatusChamado.FILA)
