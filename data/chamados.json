@@ -2,6 +2,7 @@
   {
     "setor_loja": "Cadastro",
     "solicitante": "Everina",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Baixa",
     "descricao": "Ensinei o processo de cadastro de embalagens via WMS Smart exportando para o ERP Winthor.",
@@ -15,6 +16,7 @@
   {
     "setor_loja": "Logística",
     "solicitante": "Paulo Sena",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Baixa",
     "descricao": "Impressora zebra nao funciona.\r\n",
@@ -28,6 +30,7 @@
   {
     "setor_loja": "RH",
     "solicitante": "Carlos",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Baixa",
     "descricao": "Configurar projetor.",
@@ -41,6 +44,7 @@
   {
     "setor_loja": "Logística",
     "solicitante": "Reginaldo",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Média",
     "descricao": "Fonte roda, para e o PC nao liga.",
@@ -54,6 +58,7 @@
   {
     "setor_loja": "showroom",
     "solicitante": "Demanda WMS",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Alta",
     "descricao": "Transferir estoque e posiçao de itens para a posiçao padrao.",
@@ -67,6 +72,7 @@
   {
     "setor_loja": "Financeiro",
     "solicitante": "Caiala",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Média",
     "descricao": "Configurar scanner.",
@@ -80,6 +86,7 @@
   {
     "setor_loja": "Logística",
     "solicitante": "Sergio",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Crítica",
     "descricao": "Restaurar duas maquinas para reginaldo e sergio.",
@@ -93,6 +100,7 @@
   {
     "setor_loja": "Cadastro",
     "solicitante": "Everina",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Alta",
     "descricao": "Configurar painel de acompanhamento de recebimento na tv.",
@@ -106,6 +114,7 @@
   {
     "setor_loja": "Comercial",
     "solicitante": "Pablo",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Baixa",
     "descricao": "Liberar permissao de faturamento para as vendedoras.",
@@ -119,6 +128,7 @@
   {
     "setor_loja": "Comercial",
     "solicitante": "Pablo",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Baixa",
     "descricao": "Liberar permissao da rotina 1504 para as vendedoras gerarem boletos.",
@@ -132,6 +142,7 @@
   {
     "setor_loja": "Logística",
     "solicitante": "Alexsandro",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Média",
     "descricao": "Volume nao saiu na zebra, volume cancelado e gerado novamente para imprimir",
@@ -145,6 +156,7 @@
   {
     "setor_loja": "Logistica Reversa",
     "solicitante": "Julia",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Média",
     "descricao": "Duvidas sobre uma entrada feita com duplicatas nos itens",
@@ -158,6 +170,7 @@
   {
     "setor_loja": "Granel",
     "solicitante": "Janjan",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Baixa",
     "descricao": "Liberar pedidos.",
@@ -171,6 +184,7 @@
   {
     "setor_loja": "T.I",
     "solicitante": "Demanda",
+    "titulo": null,
     "tipo": "Demanda",
     "dificuldade": "Alta",
     "descricao": "Reenviar email solicitando compra de itens necessarios para a T.I e Lojas.",
@@ -184,6 +198,7 @@
   {
     "setor_loja": "Logistica",
     "solicitante": "Reginaldo",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Alta",
     "descricao": "Pc apresentando erro, talvez windows corrompido.\r\nCaso se repita partir para uma avaliaçao minuciosa do caso.",
@@ -197,6 +212,7 @@
   {
     "setor_loja": "Cadastro",
     "solicitante": "Everina",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Alta",
     "descricao": "Gerar inventario e contar um produto para incluir em pedido.",
@@ -210,6 +226,7 @@
   {
     "setor_loja": "Logistica Reversa",
     "solicitante": "Julia",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Média",
     "descricao": "Erro de tributaçao pis/cofins nao cadastrado para o produto.",
@@ -223,6 +240,7 @@
   {
     "setor_loja": "Diretoria",
     "solicitante": "Milca",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Baixa",
     "descricao": "Conectar cabo hdmi novamente no pc apos reuniao com gomes de matos",
@@ -236,6 +254,7 @@
   {
     "setor_loja": "Comercial",
     "solicitante": "Edilene",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Média",
     "descricao": "Auxilio para faturar com multiplas formas de pagamento.",
@@ -249,6 +268,7 @@
   {
     "setor_loja": "Lojas",
     "solicitante": "Teste de entrada de notas manual Linx",
+    "titulo": null,
     "tipo": "Demanda",
     "dificuldade": "Alta",
     "descricao": "Testar novamente a entrada manual de mercadorias, documentar tudo detalhadamente e apresentar para Ryanne e Wallisson.",
@@ -262,6 +282,7 @@
   {
     "setor_loja": "Delivery",
     "solicitante": "Rosy",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Média",
     "descricao": "Verificar 3 sabores de Clean pro Zero Lac Nutrify, Encarte.",
@@ -275,6 +296,7 @@
   {
     "setor_loja": "Delivery",
     "solicitante": "Rosy",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Média",
     "descricao": "Nota pendente instituto Hesed.\r\nCst alterado para o compativel com consumidor final.",
@@ -288,6 +310,7 @@
   {
     "setor_loja": "Comercial",
     "solicitante": "Edilene",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Baixa",
     "descricao": "Acesso derrubado na rotina 530",
@@ -301,6 +324,7 @@
   {
     "setor_loja": "Granel",
     "solicitante": "Janjan",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Baixa",
     "descricao": "Pedidos liberados na rotina 336",
@@ -314,6 +338,7 @@
   {
     "setor_loja": "Comercial",
     "solicitante": "Thalyta",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Baixa",
     "descricao": "Adicionar custo de frete em pedido. Rotina 336",
@@ -327,6 +352,7 @@
   {
     "setor_loja": "Controladoria",
     "solicitante": "Victor Hugo",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Alta",
     "descricao": "Emitir relatorio de vendas e devoluçoes. Loja 20\r\n",
@@ -340,6 +366,7 @@
   {
     "setor_loja": "Comercial",
     "solicitante": "Eveline",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Média",
     "descricao": "Erro de package na rotina 336, corrigido na rotina 300 atualizando a procedure 9",
@@ -353,6 +380,7 @@
   {
     "setor_loja": "Cadastro",
     "solicitante": "Mateus",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Média",
     "descricao": "Rotina 1452 nao fechava, encerrada via gerenciador de tarefas.",
@@ -366,6 +394,7 @@
   {
     "setor_loja": "Logistica",
     "solicitante": "Inventario",
+    "titulo": null,
     "tipo": "Demanda",
     "dificuldade": "Média",
     "descricao": "Ajustar saldo na rotina 1147.",
@@ -379,6 +408,7 @@
   {
     "setor_loja": "Logistica",
     "solicitante": "Sergio",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Média",
     "descricao": "Verificar duas maquinas da logistica",
@@ -392,6 +422,7 @@
   {
     "setor_loja": "Granel",
     "solicitante": "Janjan",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Baixa",
     "descricao": "Liberar pedidos",
@@ -405,6 +436,7 @@
   {
     "setor_loja": "Diretoria",
     "solicitante": "Milca",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Baixa",
     "descricao": "Email não enviando por erro de grafia.",
@@ -418,6 +450,7 @@
   {
     "setor_loja": "Avaria",
     "solicitante": "Felipe",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Baixa",
     "descricao": "Liberação de acesso à rotina 4000.\r\n",
@@ -431,6 +464,7 @@
   {
     "setor_loja": "Comercial",
     "solicitante": "Eveline",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Alta",
     "descricao": "Pedido não aparece no WMS.",
@@ -444,6 +478,7 @@
   {
     "setor_loja": "Comercial",
     "solicitante": "Carine",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Média",
     "descricao": "Notas à serem enviadas.\r\nDoc fiscal reiniciado.",
@@ -457,6 +492,7 @@
   {
     "setor_loja": "Comercial",
     "solicitante": "Pablo",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Média",
     "descricao": "Cancelar pedido de venda na rotina 329.",
@@ -470,6 +506,7 @@
   {
     "setor_loja": "Granel",
     "solicitante": "Janjan",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Média",
     "descricao": "Programa Zebra designer não abria por conta de um erro.\r\n\"Invalid encrypted method\"",
@@ -483,6 +520,7 @@
   {
     "setor_loja": "Recebimento",
     "solicitante": "Fabiano",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Alta",
     "descricao": "Cadastrar embalagens tia sonia",
@@ -496,6 +534,7 @@
   {
     "setor_loja": "Recebimento",
     "solicitante": "Pedro",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Média",
     "descricao": "Emitir etiquetas virgens wms",
@@ -509,6 +548,7 @@
   {
     "setor_loja": "MV - North Shopping",
     "solicitante": "Sabrina",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Alta",
     "descricao": "Nota rejeitada situação tributária errada.",
@@ -522,6 +562,7 @@
   {
     "setor_loja": "Financeiro",
     "solicitante": "André",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Média",
     "descricao": "Desdobrar venda do comercial",
@@ -535,6 +576,7 @@
   {
     "setor_loja": "Delivery",
     "solicitante": "Rosy",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Média",
     "descricao": "Cadastrar promo relampago Vitafor",
@@ -548,6 +590,7 @@
   {
     "setor_loja": "Logística",
     "solicitante": "Sergio",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Média",
     "descricao": "Trocar pc de lugar",
@@ -561,6 +604,7 @@
   {
     "setor_loja": "RH",
     "solicitante": "Dayane",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Média",
     "descricao": "Planilha excel não abria",
@@ -574,6 +618,7 @@
   {
     "setor_loja": "RH",
     "solicitante": "Aline",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Média",
     "descricao": "Papel encravado",
@@ -587,6 +632,7 @@
   {
     "setor_loja": "Cadastro",
     "solicitante": "Everina",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Média",
     "descricao": "Cancelar pedido de venda duplicado.",
@@ -600,6 +646,7 @@
   {
     "setor_loja": "Granel",
     "solicitante": "Janjan",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Média",
     "descricao": "Desbloquear pedidos",
@@ -613,6 +660,7 @@
   {
     "setor_loja": "Logística",
     "solicitante": "Sergio",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Média",
     "descricao": "Pedidos WMS não exportavam.",
@@ -626,6 +674,7 @@
   {
     "setor_loja": "Logística",
     "solicitante": "Sergio",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Média",
     "descricao": "Pedidos não aparecem na 1430\r\n",
@@ -639,6 +688,7 @@
   {
     "setor_loja": "Avaria",
     "solicitante": "Wallisson",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Média",
     "descricao": "Liberar permissão de acompanhamento de entradas para o Felipy.",
@@ -652,6 +702,7 @@
   {
     "setor_loja": "Granel",
     "solicitante": "Janjan",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Média",
     "descricao": "Liberar pedidos",
@@ -665,6 +716,7 @@
   {
     "setor_loja": "Financeiro",
     "solicitante": "Jean",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Baixa",
     "descricao": "Monitor desligando.",
@@ -678,6 +730,7 @@
   {
     "setor_loja": "URGENTE",
     "solicitante": "URGENTE",
+    "titulo": null,
     "tipo": "Demanda",
     "dificuldade": "Crítica",
     "descricao": "Consertar a importação do inventário.\r\nQue subiu com 3 decimais.",
@@ -691,11 +744,12 @@
   {
     "setor_loja": "Cadastrp",
     "solicitante": "Everina",
+    "titulo": null,
     "tipo": "Chamado",
     "dificuldade": "Alta",
     "descricao": "Ajustar estoque de produto por inventário.\r\nCOD.PROD - 248033",
     "resolucao": null,
-    "status": "Em Andamento",
+    "status": "Fila",
     "data_registro": "2026-05-20 14:18:00",
     "anexo_path": null,
     "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
@@ -704,6 +758,7 @@
   {
     "setor_loja": "financeiro",
     "solicitante": "amanda",
+    "titulo": null,
     "tipo": "Demanda",
     "dificuldade": "Baixa",
     "descricao": "a solicitante, pediu para que criassemos duas salas de reuniões no google Agenda, para que os lideres da nativa, vissem o que tem de sala reservada ou livre para os mesmo reservarem se necessario e ficasse bloqueado. (reuniao e treinamento)",
@@ -713,5 +768,229 @@
     "anexo_path": null,
     "usuario_id": "7d5130b7-41bf-4144-bc70-e3afa81ec67c",
     "id": "077cbba3-a813-4b31-91c9-869bffd1a7cd"
+  },
+  {
+    "setor_loja": null,
+    "solicitante": null,
+    "titulo": "Zerar produtos via inventário",
+    "tipo": "Demanda",
+    "dificuldade": "Alta",
+    "descricao": "Subir inventário com produtos à serem zerados tanto no wms como no winthor.",
+    "resolucao": null,
+    "status": "Fila",
+    "data_registro": "2026-05-20 17:54:00",
+    "anexo_path": null,
+    "usuario_id": "admin-1",
+    "id": "cd05b37f-a9a2-4898-975f-1e97771ea8df"
+  },
+  {
+    "setor_loja": null,
+    "solicitante": null,
+    "titulo": "Erro andrezão",
+    "tipo": "Demanda",
+    "dificuldade": "Média",
+    "descricao": "Erro ao salvar diretamente no server financeiro, funciona quando salva na area de trabalho e cola dentro da pasta do servidor.",
+    "resolucao": null,
+    "status": "Fila",
+    "data_registro": "2026-05-20 17:54:00",
+    "anexo_path": null,
+    "usuario_id": "admin-1",
+    "id": "bfd2d9f1-499b-4758-b36b-f3137311421e"
+  },
+  {
+    "setor_loja": "LOGISTICA",
+    "solicitante": "SERGIO",
+    "titulo": null,
+    "tipo": "Chamado",
+    "dificuldade": "Baixa",
+    "descricao": "SOLICITOU CRIAR UM USUARIO TESTE NO WMS SMART",
+    "resolucao": "cadastrei no wms um usuario teste",
+    "status": "Concluído",
+    "data_registro": "2026-05-21 08:51:00",
+    "anexo_path": null,
+    "usuario_id": "7d5130b7-41bf-4144-bc70-e3afa81ec67c",
+    "id": "e897e00a-f62d-473c-9d0e-ddcd19b9a735"
+  },
+  {
+    "setor_loja": "RH",
+    "solicitante": "Carlos",
+    "titulo": null,
+    "tipo": "Chamado",
+    "dificuldade": "Alta",
+    "descricao": "Desbloquear PDF ",
+    "resolucao": "Desbloqueado editando com winrar ",
+    "status": "Concluído",
+    "data_registro": "2026-05-21 09:14:00",
+    "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
+    "id": "44fc6973-d2e9-47c9-b2b2-7f308875eff8"
+  },
+  {
+    "setor_loja": "Financeiro",
+    "solicitante": "Caiala",
+    "titulo": null,
+    "tipo": "Chamado",
+    "dificuldade": "Média",
+    "descricao": "Pc sem internet",
+    "resolucao": "Mal contato no cabo.",
+    "status": "Concluído",
+    "data_registro": "2026-05-21 09:14:00",
+    "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
+    "id": "dcaa5cb2-62aa-4099-b014-10ffb6e768a3"
+  },
+  {
+    "setor_loja": null,
+    "solicitante": null,
+    "titulo": "Zerar produtos",
+    "tipo": "Demanda",
+    "dificuldade": "Alta",
+    "descricao": "Zerar produtos sem estoque via inventário.",
+    "resolucao": null,
+    "status": "Fila",
+    "data_registro": "2026-05-21 09:15:00",
+    "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
+    "id": "344ca8a0-c400-41a4-9492-0bd54f2e34a4"
+  },
+  {
+    "setor_loja": "Comercial",
+    "solicitante": "Carine",
+    "titulo": null,
+    "tipo": "Chamado",
+    "dificuldade": "Média",
+    "descricao": "Nota não aparece na rotina de desdobramento.",
+    "resolucao": "Atualização de procedures será feita.\nCaso será análisado pelo time de desenvolvimento da TOTVS.",
+    "status": "Concluído",
+    "data_registro": "2026-05-21 09:50:00",
+    "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
+    "id": "b1aee30a-0559-40b2-a5bc-fc892f6a78fd"
+  },
+  {
+    "setor_loja": "Granel",
+    "solicitante": "Janjan",
+    "titulo": null,
+    "tipo": "Chamado",
+    "dificuldade": "Média",
+    "descricao": "Liberar pedidos",
+    "resolucao": "Pedidos liberados na 336",
+    "status": "Concluído",
+    "data_registro": "2026-05-21 09:50:00",
+    "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
+    "id": "b1f8701a-95eb-4f35-9cf2-ababdf86a87f"
+  },
+  {
+    "setor_loja": "Logística",
+    "solicitante": "Sergio",
+    "titulo": null,
+    "tipo": "Chamado",
+    "dificuldade": "Crítica",
+    "descricao": "Impressora não imprime.",
+    "resolucao": "Spooler reiniciado e processos excluidos.",
+    "status": "Concluído",
+    "data_registro": "2026-05-21 09:58:00",
+    "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
+    "id": "8e1743ad-e497-4a7a-bc83-ce5a54283c68"
+  },
+  {
+    "setor_loja": "Logística",
+    "solicitante": "Reginaldo",
+    "titulo": null,
+    "tipo": "Chamado",
+    "dificuldade": "Alta",
+    "descricao": "Corrigir embalagem de produtos ",
+    "resolucao": "Embalagens corrigidas via WMS para separação",
+    "status": "Concluído",
+    "data_registro": "2026-05-21 10:26:00",
+    "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
+    "id": "14f62786-bced-4849-8f4e-daa6abfdbeb0"
+  },
+  {
+    "setor_loja": "Logística",
+    "solicitante": "Sergio",
+    "titulo": null,
+    "tipo": "Chamado",
+    "dificuldade": "Média",
+    "descricao": "Liberar permissão de separação de pedidos no WMS para usuário TESTE",
+    "resolucao": "Autorizado.",
+    "status": "Concluído",
+    "data_registro": "2026-05-21 14:38:00",
+    "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
+    "id": "8eca27fd-094e-4d68-b504-46a6d0340064"
+  },
+  {
+    "setor_loja": "COMPRAS",
+    "solicitante": "HELTON",
+    "titulo": null,
+    "tipo": "Chamado",
+    "dificuldade": "Baixa",
+    "descricao": "HELTON PEDIU PARA COLOCAR O EMAIL DO COMPRAS NO PC DO ISRAEL POIS ELE VAI FAZER ACOMPANHAMENTO  ",
+    "resolucao": null,
+    "status": "Em Andamento",
+    "data_registro": "2026-05-21 14:41:00",
+    "anexo_path": null,
+    "usuario_id": "7d5130b7-41bf-4144-bc70-e3afa81ec67c",
+    "id": "1f707044-0912-4794-bc5e-941e8000b90e"
+  },
+  {
+    "setor_loja": "Recebimento",
+    "solicitante": "Fabiano",
+    "titulo": null,
+    "tipo": "Chamado",
+    "dificuldade": "Média",
+    "descricao": "Produto não bipa no recebimento (produto não cadastrado)",
+    "resolucao": "Após corrigir o ean, vi que o produto tinha dois cadastros, um de display e um de unidade, o cadastro de display não deve existir, deve ser uma embalagem dentro da unidade, desativado no WMS e no Winthor.",
+    "status": "Concluído",
+    "data_registro": "2026-05-21 15:38:00",
+    "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
+    "id": "eccebd01-fe6c-4344-ad2a-6729c54e2788"
+  },
+  {
+    "setor_loja": "LOGISTICA REVERSA",
+    "solicitante": "WALLISSON",
+    "titulo": null,
+    "tipo": "Chamado",
+    "dificuldade": "Baixa",
+    "descricao": "SOLICITOU LIMPAR TODOS OS VINCULOS DE COD DE FABRICA DA 253 - ESPERANDO ALTORIZAÇÃO",
+    "resolucao": null,
+    "status": "Fila",
+    "data_registro": "2026-05-21 15:40:00",
+    "anexo_path": null,
+    "usuario_id": "7d5130b7-41bf-4144-bc70-e3afa81ec67c",
+    "id": "aed8820d-385e-4a64-a225-5b63d9fd4261"
+  },
+  {
+    "setor_loja": "Logística",
+    "solicitante": "Sergio",
+    "titulo": null,
+    "tipo": "Chamado",
+    "dificuldade": "Crítica",
+    "descricao": "Notas pendentes",
+    "resolucao": "Cadastro corrigido em mais de 40 produtos manualmente.",
+    "status": "Concluído",
+    "data_registro": "2026-05-21 15:42:00",
+    "anexo_path": null,
+    "usuario_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
+    "id": "b6631d99-a24e-4407-8bf8-5c7d0e304068"
+  },
+  {
+    "setor_loja": "LOJA",
+    "solicitante": "LUCELIA ",
+    "titulo": null,
+    "tipo": "Chamado",
+    "dificuldade": "Baixa",
+    "descricao": "PEDIU PARA AJUSTAR NOTA SUBSTITUITIVA QUE NAO ESTAVA SENDO AUTORIZADA.",
+    "resolucao": "VERIFIQUEI QUAL O PRODUTO QUE ESTAVA COM O CST ERRADO E CORRIGI. DEPOIS EXCLUI A NOTA REJEITADA E REFIZ A SUBSTITUIITIVA NOVAMENTE E DEU CERTO",
+    "status": "Concluído",
+    "data_registro": "2026-05-21 15:47:00",
+    "anexo_path": null,
+    "usuario_id": "7d5130b7-41bf-4144-bc70-e3afa81ec67c",
+    "id": "db4a607b-1552-47d2-ae14-d68719af49b0"
   }
 ]
