@@ -16,12 +16,15 @@ templates = Jinja2Templates(directory="templates")
 async def pg_relatorios(request: Request):
     setores = listar_setores()
     tipos   = [t.value for t in TipoMaquina]
+    from crud.users import get_all_users
+    usuarios = get_all_users()
     return templates.TemplateResponse(request=request,
         name="relatorios/index.html",
         context={
         "request": request,
         "setores": setores,
         "tipos": tipos,
+        "usuarios": usuarios,
     })
 
 
@@ -99,6 +102,7 @@ async def exportar_excel(
 @router.post("/exportar-chamados", name="exportar_chamados")
 async def exportar_chamados(
     status: Optional[str] = Form(None),
+    usuario_id: Optional[str] = Form(None),
     campos: list[str] = Form(default=[])
 ):
     """Gera e devolve um arquivo Excel com os chamados filtrados e personalizados."""
@@ -108,6 +112,8 @@ async def exportar_chamados(
     chamados = listar_chamados()
     if status:
         chamados = [c for c in chamados if c.status.value == status]
+    if usuario_id:
+        chamados = [c for c in chamados if c.usuario_id == usuario_id]
 
     todos_campos = {
         "id": "ID",

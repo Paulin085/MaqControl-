@@ -113,6 +113,16 @@
             <option value="Concluído">Concluído</option>
           </select>
         </div>
+        <!-- Filtro Usuário -->
+        <div>
+          <label class="text-xs text-slate-400 mb-1 block">Usuário (Solicitante)</label>
+          <select name="usuario_id" class="input-glass">
+            <option value="">Todos os usuários</option>
+            {% for u in usuarios %}
+            <option value="{{ u.id }}">{{ u.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
       </div>
 
       <!-- Seleção de campos Chamados -->
