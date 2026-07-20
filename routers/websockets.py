@@ -6,9 +6,11 @@
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
+import json
 from crud.users import get_user_by_id
 from crud.crud_chamados import buscar_chamado
 from .connection_manager import manager
+from .desktop_api import _criar_mensagem, _salvar_mensagem, notificar_nova_mensagem
 
 router = APIRouter(tags=["WebSocket Web"])
 
@@ -74,5 +76,27 @@ async def ws_chat_web(websocket: WebSocket, chamado_id: str):
             data = await websocket.receive_text()
             if data == "ping":
                 await websocket.send_json({"tipo": "pong"})
+                continue
+
+            try:
+                payload = json.loads(data)
+                msg_texto = payload.get("mensagem", "").strip()
+                if msg_texto:
+                    message = _criar_mensagem(
+                        chamado_id=chamado_id,
+                        remetente_id=user.id,
+                        remetente_nome=user.name,
+                        mensagem=msg_texto,
+                        is_admin=user.is_admin
+                    )
+                    _salvar_mensagem(chamado_id, message)
+                    
+                    # Envia a mensagem para todos os participantes na sala do chamado
+                    await manager.send_to_chat_room(chamado_id, {"tipo": "nova_mensagem_chat", **message})
+                    
+                    # Dispara as notificações globais para os outros usuários
+                    await notificar_nova_mensagem(message, chamado)
+            except json.JSONDecodeError:
+                pass
     except WebSocketDisconnect:
         await manager.disconnect_chat(websocket, chamado_id)

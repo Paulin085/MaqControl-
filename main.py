@@ -8,7 +8,7 @@ from typing import Optional
 from pathlib import Path
 from routers import (
     dashboard, maquinas, setores, manutencoes, relatorios,
-    auth, chamados, admin, desktop_api, colaborador, websockets
+    auth, chamados, admin, desktop_api, colaborador, websockets, chat
 )
 
 # Garante que os diretórios existam
@@ -37,6 +37,8 @@ app.include_router(admin.router)
 app.include_router(desktop_api.router)
 app.include_router(colaborador.router)
 app.include_router(websockets.router)   # WebSocket com autenticação por cookie
+app.include_router(chat.router)         # Chat centralizado e independente
+
 
 # ── Tratamento de erros e Segurança ────────────────────────────────────────────
 from fastapi.templating import Jinja2Templates

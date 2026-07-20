@@ -172,31 +172,5 @@ async def colaborador_novo_post(
 
 @router.get("/chat/{chamado_id}", response_class=HTMLResponse, name="colaborador_chat")
 async def colaborador_chat(request: Request, chamado_id: str):
-    user = request.state.user
-    if user.is_admin:
-        return RedirectResponse(url=f"/chamados/{chamado_id}/chat", status_code=303)
-
-    chamado = buscar_chamado(chamado_id)
-    if not chamado:
-        raise HTTPException(status_code=404, detail="Chamado não encontrado")
-
-    if chamado.usuario_id != user.id:
-        raise HTTPException(status_code=403, detail="Sem permissão para este chamado")
-
-    # Carrega histórico de mensagens
-    chat_data = _load_chat()
-    mensagens = chat_data.get(chamado_id, [])
-
-    # Marca como lido
-    mark_chat_read(user.id, chamado_id)
-
-    return templates.TemplateResponse(
-        request=request,
-        name="colaborador/chat.html",
-        context={
-            "request": request,
-            "user": user,
-            "chamado": chamado,
-            "mensagens": mensagens,
-        }
-    )
+    """Redireciona para o chat centralizado."""
+    return RedirectResponse(url=f"/chat?c={chamado_id}", status_code=303)

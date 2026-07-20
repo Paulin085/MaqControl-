@@ -277,6 +277,56 @@
         setTimeout(() => toast.remove(), 300);
       }, duration);
     }
+
+    // ── WebSocket de Notificações Gerais ──────────────────────────────────────
+    (function () {
+      let wsNotify, delay = 2000;
+      function connectNotifications() {
+        const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+        wsNotify = new WebSocket(`${proto}://${location.host}/ws/notificacoes`);
+        wsNotify.onopen = () => {
+          delay = 2000;
+          setInterval(() => {
+            if (wsNotify && wsNotify.readyState === WebSocket.OPEN) {
+              wsNotify.send('ping');
+            }
+          }, 25000);
+        };
+        wsNotify.onmessage = (e) => {
+          try {
+            const d = JSON.parse(e.data);
+            if (d.tipo === 'pong') return;
+            
+            // Dispara evento JS global
+            window.dispatchEvent(new CustomEvent('ws:' + d.tipo, { detail: d }));
+
+            // Exibe toast se necessário
+            if (d.tipo === 'nova_mensagem') {
+              // Só exibe toast se NÃO estivermos na página de chat deste chamado
+              if (typeof ACTIVE_CHAMADO_ID === 'undefined' || ACTIVE_CHAMADO_ID !== d.chamado_id) {
+                showToast(`💬 Nova mensagem de <strong>${escapeHtml(d.remetente)}</strong> em "${escapeHtml(d.chamado_titulo)}": "${escapeHtml(d.preview)}"`);
+              }
+            } else if (d.tipo === 'atualizacao_chamado') {
+              showToast(`🔔 Status do chamado "${escapeHtml(d.chamado_titulo)}" alterado para <strong>${escapeHtml(d.novo_status)}</strong>`);
+            }
+          } catch (_) {}
+        };
+        wsNotify.onclose = () => {
+          setTimeout(connectNotifications, delay);
+          delay = Math.min(delay * 1.5, 30000);
+        };
+      }
+
+      function escapeHtml(s) {
+        return String(s)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      connectNotifications();
+    })();
   </script>
 
   {% block extra_scripts %}{% endblock %}

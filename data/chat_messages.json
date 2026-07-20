@@ -41,6 +41,36 @@
       "mensagem": "Oiee",
       "timestamp": "2026-07-20T17:38:47.582940",
       "lido": false
+    },
+    {
+      "id": "a41bf9f5-8b04-4dcf-bd45-7ad37f7610eb",
+      "chamado_id": "5a227c0c-c67c-4923-add6-98b57e2194de",
+      "remetente_id": "7d5130b7-41bf-4144-bc70-e3afa81ec67c",
+      "remetente_nome": "Vanessa Fortes",
+      "is_admin": false,
+      "mensagem": "oie",
+      "timestamp": "2026-07-20T17:52:37.264583",
+      "lido": false
+    },
+    {
+      "id": "ae0dc14c-9112-41b3-8c99-3c25ffffddbc",
+      "chamado_id": "5a227c0c-c67c-4923-add6-98b57e2194de",
+      "remetente_id": "admin-1",
+      "remetente_nome": "Administrador",
+      "is_admin": true,
+      "mensagem": "Oii vanessa da mata",
+      "timestamp": "2026-07-20T17:52:52.175310",
+      "lido": false
+    },
+    {
+      "id": "e6bc43a7-9a54-4ade-94a5-9a3dc06b11f8",
+      "chamado_id": "5a227c0c-c67c-4923-add6-98b57e2194de",
+      "remetente_id": "7d5130b7-41bf-4144-bc70-e3afa81ec67c",
+      "remetente_nome": "Vanessa Fortes",
+      "is_admin": false,
+      "mensagem": "ajeita esse troço",
+      "timestamp": "2026-07-20T17:53:03.276850",
+      "lido": false
     }
   ]
 }

@@ -1,0 +1,658 @@
+{% extends "base.html" if user.is_admin else "colaborador/base_colaborador.html" %}
+
+{% block title %}Chat Centralizado — MaqControl{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* Layout do Chat Workspace */
+  .chat-workspace-layout {
+    display: flex;
+    gap: 1.25rem;
+    height: calc(100vh - 120px);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  /* Painel Esquerdo (Lista de Conversas) */
+  .chat-list-pane {
+    width: 320px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    backdrop-filter: blur(12px);
+    overflow: hidden;
+  }
+
+  .chat-list-header {
+    padding: 1.2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .chat-list-items {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .conv-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.9rem 1rem;
+    border-radius: 14px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .conv-card:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.08);
+  }
+
+  .conv-card.active {
+    background: rgba(34, 197, 94, 0.12);
+    border-color: rgba(34, 197, 94, 0.3);
+  }
+
+  .conv-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .conv-title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #f1f5f9;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .conv-time {
+    font-size: 0.68rem;
+    color: #64748b;
+    flex-shrink: 0;
+  }
+
+  .conv-preview {
+    font-size: 0.78rem;
+    color: #94a3b8;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 1.2em;
+  }
+
+  .conv-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2px;
+  }
+
+  .conv-user-info {
+    font-size: 0.7rem;
+    color: #4b7a5a;
+    font-weight: 600;
+  }
+
+  .conv-badge {
+    background: #22c55e;
+    color: #ffffff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 9999px;
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.4);
+  }
+
+  /* Painel Direito (Chat Ativo) */
+  .chat-conversation-pane {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 20px;
+    backdrop-filter: blur(12px);
+    overflow: hidden;
+  }
+
+  .chat-pane-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #475569;
+    gap: 0.75rem;
+    padding: 2rem;
+    text-align: center;
+  }
+
+  .chat-pane-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    background: rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .chat-pane-messages {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    padding: 1.25rem;
+    scroll-behavior: smooth;
+  }
+
+  .chat-pane-input-area {
+    padding: 1rem 1.25rem;
+    background: rgba(255, 255, 255, 0.04);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-end;
+  }
+
+  /* Bolhas de mensagem */
+  .msg-self {
+    align-self: flex-end;
+    max-width: 72%;
+    background: linear-gradient(135deg, #15803d, #16a34a);
+    color: #ffffff;
+    border-radius: 18px 18px 4px 18px;
+    padding: 0.65rem 1rem;
+    box-shadow: 0 4px 12px rgba(22,163,74,.25);
+  }
+
+  .msg-other {
+    align-self: flex-start;
+    max-width: 72%;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #e2e8f0;
+    border-radius: 18px 18px 18px 4px;
+    padding: 0.65rem 1rem;
+  }
+
+  .msg-meta-name {
+    font-size: 0.68rem;
+    font-weight: 700;
+    opacity: 0.8;
+    margin-bottom: 3px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+
+  .msg-self .msg-meta-name { color: #bbf7d0; }
+  .msg-other .msg-meta-name { color: #86efac; }
+
+  .msg-text-content {
+    font-size: 0.88rem;
+    line-height: 1.45;
+    word-break: break-word;
+  }
+
+  .msg-meta-time {
+    font-size: 0.65rem;
+    opacity: 0.6;
+    margin-top: 4px;
+    text-align: right;
+  }
+
+  /* Status Pills */
+  .status-pill {
+    padding: 4px 10px;
+    border-radius: 99px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+
+  .pill-fila      { background: rgba(107, 114, 128, 0.2); color: #d1d5db; border: 1px solid rgba(107, 114, 128, 0.4); }
+  .pill-andamento { background: rgba(245, 158, 11, 0.2);  color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.4); }
+  .pill-concluido { background: rgba(34, 197, 94, 0.2);   color: #86efac; border: 1px solid rgba(34, 197, 94, 0.4); }
+
+  .day-divider {
+    display: flex; align-items: center; gap: .75rem;
+    color: #4b7a5a; font-size: 0.68rem; font-weight: 600;
+    letter-spacing: .06em; text-transform: uppercase; margin: .5rem 0;
+  }
+  .day-divider::before, .day-divider::after {
+    content:''; flex:1; height:1px; background:rgba(255,255,255,0.06);
+  }
+
+  /* Animação */
+  .anim-msg-in { animation: msgIn .25s ease forwards; }
+  @keyframes msgIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+  /* Mobile Responsive */
+  @media (max-width: 768px) {
+    .chat-workspace-layout {
+      position: relative;
+      height: calc(100vh - 80px);
+    }
+    .chat-list-pane {
+      width: 100%;
+      display: {% if chamado %}none{% else %}flex{% endif %};
+    }
+    .chat-conversation-pane {
+      display: {% if chamado %}flex{% else %}none{% endif %};
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="chat-workspace-layout fade-up">
+  
+  <!-- Painel Esquerdo: Lista de Conversas -->
+  <aside class="chat-list-pane" id="chat-list-pane">
+    <div class="chat-list-header flex items-center justify-between">
+      <h2 class="text-lg font-bold text-white">Conversas</h2>
+      <span class="text-xs text-slate-500">{{ conversas | length }} chamados</span>
+    </div>
+    
+    <div class="chat-list-items" id="chat-list-container">
+      {% if conversas %}
+        {% for conv in conversas %}
+          <div class="conv-card {% if chamado and chamado.id == conv.id %}active{% endif %}" 
+               id="conv-card-{{ conv.id }}"
+               onclick="selectConversation('{{ conv.id }}')">
+            <div class="conv-meta">
+              <span class="conv-title" title="{{ conv.titulo }}">{{ conv.titulo }}</span>
+              <span class="conv-time" id="conv-time-{{ conv.id }}">
+                {{ conv.last_msg_time.strftime('%H:%M') }}
+              </span>
+            </div>
+            
+            <div class="conv-preview" id="conv-preview-{{ conv.id }}">
+              {{ conv.last_msg or 'Nenhuma mensagem ainda.' }}
+            </div>
+            
+            <div class="conv-footer">
+              <span class="conv-user-info">
+                {% if user.is_admin %}
+                  👤 {{ conv.solicitante }}
+                {% else %}
+                  {{ conv.setor }}
+                {% endif %}
+              </span>
+              <div class="flex items-center gap-1.5">
+                <span class="status-pill text-[9px] px-1.5 py-0.5
+                  {% if conv.status == 'Fila' %}pill-fila
+                  {% elif conv.status == 'Em Andamento' %}pill-andamento
+                  {% else %}pill-concluido{% endif %}"
+                  id="conv-status-pill-{{ conv.id }}">{{ conv.status }}</span>
+                <span class="conv-badge {% if conv.unread_count == 0 %}hidden{% endif %}" 
+                      id="conv-badge-{{ conv.id }}">
+                  {{ conv.unread_count }}
+                </span>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="text-center text-slate-600 text-sm py-12">
+          <p>Nenhuma conversa encontrada.</p>
+        </div>
+      {% endif %}
+    </div>
+  </aside>
+
+  <!-- Painel Direito: Chat Ativo -->
+  <main class="chat-conversation-pane">
+    {% if chamado %}
+      <!-- Header do Chat -->
+      <div class="chat-pane-header flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <button class="md:hidden p-2 rounded-lg text-slate-400 hover:bg-white/5" onclick="backToList()">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/>
+            </svg>
+          </button>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="font-bold text-white text-base max-w-[200px] sm:max-w-md truncate" title="{{ chamado.titulo }}">
+                {{ chamado.titulo }}
+              </h1>
+              <span class="status-pill
+                {% if chamado.status.value == 'Fila' %}pill-fila
+                {% elif chamado.status.value == 'Em Andamento' %}pill-andamento
+                {% else %}pill-concluido{% endif %}"
+                id="active-chat-status">{{ chamado.status.value }}</span>
+            </div>
+            <p class="text-xs text-slate-500 mt-0.5">
+              Solicitante: <strong>{{ chamado.solicitante }}</strong> | Setor: <strong>{{ chamado.setor_loja or 'N/A' }}</strong>
+            </p>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-2">
+          {% if user.is_admin %}
+            <a href="/chamados/{{ chamado.id }}/editar" class="btn-secondary px-3 py-1.5 text-xs font-semibold">
+              Gerenciar Chamado
+            </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Histórico de Mensagens -->
+      <div class="chat-pane-messages" id="chat-messages-box">
+        {% if not mensagens %}
+          <div class="text-center text-slate-600 text-sm py-12" id="chat-empty-placeholder">
+            <p>💬 Nenhuma mensagem ainda nesta conversa.</p>
+            <p class="text-xs mt-1">Envie uma mensagem para iniciar.</p>
+          </div>
+        {% endif %}
+
+        {% set last_date = namespace(value='') %}
+        {% for msg in mensagens %}
+          {% set msg_date = msg.timestamp[:10] %}
+          {% if msg_date != last_date.value %}
+            {% set last_date.value = msg_date %}
+            <div class="day-divider">
+              {% if msg_date == hoje_str %}Hoje{% else %}{{ msg_date }}{% endif %}
+            </div>
+          {% endif %}
+
+          {% set is_self = (msg.is_admin and user.is_admin) or (not msg.is_admin and not user.is_admin) %}
+          <div class="{% if is_self %}msg-self{% else %}msg-other{% endif %}">
+            {% if not is_self %}
+              <p class="msg-meta-name">
+                {% if msg.is_admin %}🖥 TI / Admin{% else %}👤 {{ msg.remetente_nome }}{% endif %}
+              </p>
+            {% endif %}
+            <p class="msg-text-content">{{ msg.mensagem }}</p>
+            <p class="msg-meta-time">{{ msg.timestamp[11:16] }}</p>
+          </div>
+        {% endfor %}
+      </div>
+
+      <!-- Input de Mensagens -->
+      {% if chamado.status.value != 'Concluído' %}
+        <div class="chat-pane-input-area">
+          <textarea id="chat-textarea" class="input-glass flex-1 bg-white/5 border-white/10 text-white rounded-xl py-3 px-4 resize-none h-[46px] max-h-[120px] outline-none" 
+                    placeholder="Digite sua resposta..."
+                    rows="1"
+                    maxlength="1000"
+                    onkeydown="onInputKeyDown(event)"
+                    oninput="resizeTextarea(this)"></textarea>
+          <button class="btn-primary py-2.5 px-5 h-[46px] rounded-xl flex items-center justify-center gap-1.5 shrink-0" 
+                  id="chat-send-btn" 
+                  onclick="sendMessageWS()">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+            </svg>
+            <span>Enviar</span>
+          </button>
+        </div>
+      {% else %}
+        <div class="chat-pane-input-area justify-center bg-white/5 py-4 border-t border-white/8">
+          <p class="text-sm text-emerald-400 font-semibold flex items-center gap-2">
+            <span>✅ Este chamado foi concluído. O chat está encerrado.</span>
+          </p>
+        </div>
+      {% endif %}
+
+    {% else %}
+      <!-- Estado Vazio (Nenhuma conversa selecionada) -->
+      <div class="chat-pane-empty">
+        <svg class="w-16 h-16 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
+                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+        </svg>
+        <div>
+          <h3 class="text-lg font-bold text-slate-400">Nenhuma conversa selecionada</h3>
+          <p class="text-sm text-slate-600 mt-1">Escolha uma conversa na barra lateral para iniciar o atendimento.</p>
+        </div>
+      </div>
+    {% endif %}
+  </main>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  const CURRENT_USER_ID = "{{ user.id }}";
+  const CURRENT_USER_IS_ADMIN = {{ 'true' if user.is_admin else 'false' }};
+  const ACTIVE_CHAMADO_ID = {% if chamado %}"{{ chamado.id }}"{% else %}null{% endif %};
+  const msgBox = document.getElementById('chat-messages-box');
+  const chatListContainer = document.getElementById('chat-list-container');
+
+  // Rolar para o final do chat
+  function scrollChatBottom(smooth = false) {
+    if (msgBox) {
+      msgBox.scrollTo({ top: msgBox.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
+    }
+  }
+  scrollChatBottom(false);
+
+  // Redimensionamento do input text area
+  function resizeTextarea(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  }
+
+  function onInputKeyDown(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessageWS();
+    }
+  }
+
+  function selectConversation(id) {
+    location.href = `/chat?c=${id}`;
+  }
+
+  function backToList() {
+    location.href = '/chat';
+  }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/\n/g, '<br>');
+  }
+
+  // ── WebSocket Chat de Conversa ─────────────────────────────────────────────
+  let chatWS;
+  if (ACTIVE_CHAMADO_ID) {
+    const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+    const chatWSUrl = `${proto}://${location.host}/ws/chat/${ACTIVE_CHAMADO_ID}`;
+    
+    function connectChatWS() {
+      chatWS = new WebSocket(chatWSUrl);
+      
+      chatWS.onopen = () => {
+        // Envia ping periódico para manter viva a conexão
+        setInterval(() => {
+          if (chatWS && chatWS.readyState === WebSocket.OPEN) {
+            chatWS.send('ping');
+          }
+        }, 20000);
+      };
+
+      chatWS.onmessage = (e) => {
+        try {
+          const data = JSON.parse(e.data);
+          if (data.tipo === 'pong') return;
+
+          if (data.tipo === 'nova_mensagem_chat') {
+            // Remove o placeholder se houver
+            const pl = document.getElementById('chat-empty-placeholder');
+            if (pl) pl.remove();
+
+            // Adiciona a bolha de mensagem ao container de mensagens
+            const isSelf = (data.is_admin && CURRENT_USER_IS_ADMIN) || (!data.is_admin && !CURRENT_USER_IS_ADMIN);
+            const msgDiv = document.createElement('div');
+            msgDiv.className = (isSelf ? 'msg-self' : 'msg-other') + ' anim-msg-in';
+            
+            const timeStr = (data.timestamp || '').substring(11, 16);
+            
+            if (isSelf) {
+              msgDiv.innerHTML = `
+                <p class="msg-text-content">${escapeHtml(data.mensagem)}</p>
+                <p class="msg-meta-time">${timeStr}</p>
+              `;
+            } else {
+              msgDiv.innerHTML = `
+                <p class="msg-meta-name">${data.is_admin ? '🖥 TI / Admin' : '👤 ' + escapeHtml(data.remetente_nome)}</p>
+                <p class="msg-text-content">${escapeHtml(data.mensagem)}</p>
+                <p class="msg-meta-time">${timeStr}</p>
+              `;
+            }
+
+            msgBox.appendChild(msgDiv);
+            scrollChatBottom(true);
+          }
+        } catch (_) {}
+      };
+
+      chatWS.onclose = () => {
+        setTimeout(connectChatWS, 2000);
+      };
+    }
+
+    connectChatWS();
+  }
+
+  // Enviar mensagem pelo WebSocket
+  function sendMessageWS() {
+    const input = document.getElementById('chat-textarea');
+    const text = input.value.trim();
+    if (!text || !chatWS || chatWS.readyState !== WebSocket.OPEN) return;
+
+    // Envia o payload
+    chatWS.send(JSON.stringify({ mensagem: text }));
+
+    // Limpa o input
+    input.value = '';
+    input.style.height = 'auto';
+    input.focus();
+  }
+
+  // ── Listener de eventos globais para atualizar a barra lateral em tempo real ──
+  // Registrado a partir dos eventos que o WebSocket global de notificações (base.html) irá disparar
+  window.addEventListener('ws:nova_mensagem', (event) => {
+    const d = event.detail;
+    
+    // 1. Atualizar o preview e a hora do card à esquerda
+    const previewEl = document.getElementById(`conv-preview-${d.chamado_id}`);
+    const timeEl = document.getElementById(`conv-time-${d.chamado_id}`);
+    
+    if (previewEl) {
+      previewEl.textContent = d.preview;
+    }
+    if (timeEl) {
+      const now = new Date();
+      timeEl.textContent = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+    }
+
+    // 2. Incrementar o badge se não for o chat que está aberto
+    if (ACTIVE_CHAMADO_ID !== d.chamado_id) {
+      const badgeEl = document.getElementById(`conv-badge-${d.chamado_id}`);
+      if (badgeEl) {
+        let count = parseInt(badgeEl.textContent.trim()) || 0;
+        badgeEl.textContent = count + 1;
+        badgeEl.classList.remove('hidden');
+      }
+    }
+
+    // 3. Mover o card da conversa para o topo da lista
+    const card = document.getElementById(`conv-card-${d.chamado_id}`);
+    if (card && chatListContainer) {
+      chatListContainer.prepend(card);
+    }
+  });
+
+  window.addEventListener('ws:atualizacao_chamado', (event) => {
+    const d = event.detail;
+    
+    // Atualizar o status pill na barra lateral
+    const statusPill = document.getElementById(`conv-status-pill-${d.chamado_id}`);
+    if (statusPill) {
+      statusPill.textContent = d.novo_status;
+      const classMap = {
+        'Fila': 'pill-fila',
+        'Em Andamento': 'pill-andamento',
+        'Concluído': 'pill-concluido'
+      };
+      statusPill.className = `status-pill text-[9px] px-1.5 py-0.5 ${classMap[d.novo_status] || 'pill-fila'}`;
+    }
+
+    // Se for a conversa ativa atualizada
+    if (ACTIVE_CHAMADO_ID === d.chamado_id) {
+      const activeStatusPill = document.getElementById('active-chat-status');
+      if (activeStatusPill) {
+        activeStatusPill.textContent = d.novo_status;
+        const classMap = {
+          'Fila': 'pill-fila',
+          'Em Andamento': 'pill-andamento',
+          'Concluído': 'pill-concluido'
+        };
+        activeStatusPill.className = `status-pill ${classMap[d.novo_status] || 'pill-fila'}`;
+      }
+
+      // Se foi concluído, fecha o chat (recarrega para atualizar input/bloqueios)
+      if (d.novo_status === 'Concluído') {
+        location.reload();
+      }
+    }
+  });
+
+  window.addEventListener('ws:novo_chamado', (event) => {
+    // Se o usuário for admin, adicionamos o novo chamado na lista de conversas
+    if (CURRENT_USER_IS_ADMIN) {
+      const d = event.detail;
+      if (document.getElementById(`conv-card-${d.chamado_id}`)) return; // Já existe
+
+      const div = document.createElement('div');
+      div.className = 'conv-card';
+      div.id = `conv-card-${d.chamado_id}`;
+      div.onclick = () => selectConversation(d.chamado_id);
+
+      const now = new Date();
+      const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+
+      div.innerHTML = `
+        <div class="conv-meta">
+          <span class="conv-title" title="${escapeHtml(d.titulo)}">${escapeHtml(d.titulo)}</span>
+          <span class="conv-time" id="conv-time-${d.chamado_id}">${timeStr}</span>
+        </div>
+        <div class="conv-preview" id="conv-preview-${d.chamado_id}">Novo chamado criado.</div>
+        <div class="conv-footer">
+          <span class="conv-user-info">👤 ${escapeHtml(d.solicitante)}</span>
+          <div class="flex items-center gap-1.5">
+            <span class="status-pill text-[9px] px-1.5 py-0.5 pill-fila" id="conv-status-pill-${d.chamado_id}">Fila</span>
+            <span class="conv-badge hidden" id="conv-badge-${d.chamado_id}">0</span>
+          </div>
+        </div>
+      `;
+
+      if (chatListContainer) {
+        chatListContainer.prepend(div);
+      }
+    }
+  });
+</script>
+{% endblock %}

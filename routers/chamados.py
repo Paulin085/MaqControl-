@@ -359,7 +359,10 @@ async def pg_editar_chamado(
         # Note: data_registro update might need a new model field or handling
         # For now, let's keep it simple as ChamadoUpdate doesn't have data_registro
         
-        atualizar_chamado(id, payload)
+        chamado_atualizado = atualizar_chamado(id, payload)
+        if chamado_atualizado:
+            from routers.desktop_api import notificar_atualizacao_chamado
+            await notificar_atualizacao_chamado(chamado_atualizado)
         return RedirectResponse(url="/chamados/", status_code=303)
     except Exception as e:
         setores = listar_setores()
@@ -421,49 +424,5 @@ async def pg_deletar_chamado(request: Request, id: str):
 
 @router.get("/{id}/chat", response_class=HTMLResponse, name="chamado_chat_it")
 async def pg_chamado_chat_it(request: Request, id: str):
-    """Tela de chat da TI para um chamado específico."""
-    chamado = buscar_chamado(id)
-    if not chamado:
-        raise HTTPException(status_code=404, detail="Chamado não encontrado")
-
-    user = request.state.user
-
-    # Admin pode ver o chat de QUALQUER chamado
-    # Colaborador só pode ver o próprio
-    if not user.is_admin and chamado.usuario_id != user.id:
-        raise HTTPException(status_code=403, detail="Sem permissão para acessar este chamado")
-
-    from routers.desktop_api import _load_chat, mark_chat_read
-    chat_data = _load_chat()
-    mensagens = chat_data.get(id, [])
-
-    # Extrai participantes únicos para a sidebar
-    participantes = {}
-    for msg in mensagens:
-        pid = msg.get("remetente_id", "")
-        if pid and pid not in participantes:
-            participantes[pid] = {
-                "id": pid,
-                "nome": msg.get("remetente_nome", "Desconhecido"),
-                "is_admin": msg.get("is_admin", False),
-                "count": 0,
-            }
-        if pid:
-            participantes[pid]["count"] += 1
-
-    participantes_lista = sorted(participantes.values(), key=lambda p: p["count"], reverse=True)
-
-    # Marca como lido para este admin
-    mark_chat_read(user.id, id)
-
-    return templates.TemplateResponse(
-        request=request,
-        name="chamados/chat_it.html",
-        context={
-            "request": request,
-            "chamado": chamado,
-            "user": user,
-            "mensagens": mensagens,
-            "participantes": participantes_lista,
-        }
-    )
+    """Redireciona para o chat centralizado."""
+    return RedirectResponse(url=f"/chat?c={id}", status_code=303)
