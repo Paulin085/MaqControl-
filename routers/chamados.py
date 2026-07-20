@@ -11,6 +11,7 @@ import shutil
 from crud.crud_chamados import listar_chamados, buscar_chamado, criar_chamado, atualizar_chamado, deletar_chamado
 from crud import listar_setores
 from models.chamado import ChamadoCreate, ChamadoUpdate, Dificuldade, StatusChamado, TipoChamado
+from routers.desktop_api import get_unread_count
 
 router = APIRouter(prefix="/chamados", tags=["Chamados"])
 templates = Jinja2Templates(directory="templates")
@@ -73,6 +74,14 @@ async def pg_chamados_dashboard(
         "Concluído": [c for c in chamados_dashboard if c.status == StatusChamado.CONCLUIDO]
     }
 
+    # Contagem de mensagens não lidas por chamado (para botão de chat no card)
+    unread = {}
+    if user.is_admin:
+        unread = {
+            c.id: get_unread_count(user.id, c.id, user_is_admin=True)
+            for c in chamados_dashboard
+        }
+
     return templates.TemplateResponse(
         request=request,
         name="chamados/dashboard.html",
@@ -81,6 +90,7 @@ async def pg_chamados_dashboard(
             "chamados": chamados_dashboard,
             "grupos": grupos,
             "setores": setores,
+            "unread": unread,
             "indicadores": {
                 "total": total_dashboard,
                 "em_aberto": em_aberto,
@@ -388,8 +398,11 @@ async def pg_avancar_chamado(request: Request, id: str):
     
     if novo_status != chamado.status:
         payload = ChamadoUpdate(status=novo_status)
-        atualizar_chamado(id, payload)
-        
+        chamado_atualizado = atualizar_chamado(id, payload)
+        if chamado_atualizado:
+            from routers.desktop_api import notificar_atualizacao_chamado
+            await notificar_atualizacao_chamado(chamado_atualizado)
+
     return RedirectResponse(url="/chamados/", status_code=303)
 
 @router.post("/{id}/deletar", name="deletar_chamado_post")
@@ -404,3 +417,53 @@ async def pg_deletar_chamado(request: Request, id: str):
         
     deletar_chamado(id)
     return RedirectResponse(url="/chamados/", status_code=303)
+
+
+@router.get("/{id}/chat", response_class=HTMLResponse, name="chamado_chat_it")
+async def pg_chamado_chat_it(request: Request, id: str):
+    """Tela de chat da TI para um chamado específico."""
+    chamado = buscar_chamado(id)
+    if not chamado:
+        raise HTTPException(status_code=404, detail="Chamado não encontrado")
+
+    user = request.state.user
+
+    # Admin pode ver o chat de QUALQUER chamado
+    # Colaborador só pode ver o próprio
+    if not user.is_admin and chamado.usuario_id != user.id:
+        raise HTTPException(status_code=403, detail="Sem permissão para acessar este chamado")
+
+    from routers.desktop_api import _load_chat, mark_chat_read
+    chat_data = _load_chat()
+    mensagens = chat_data.get(id, [])
+
+    # Extrai participantes únicos para a sidebar
+    participantes = {}
+    for msg in mensagens:
+        pid = msg.get("remetente_id", "")
+        if pid and pid not in participantes:
+            participantes[pid] = {
+                "id": pid,
+                "nome": msg.get("remetente_nome", "Desconhecido"),
+                "is_admin": msg.get("is_admin", False),
+                "count": 0,
+            }
+        if pid:
+            participantes[pid]["count"] += 1
+
+    participantes_lista = sorted(participantes.values(), key=lambda p: p["count"], reverse=True)
+
+    # Marca como lido para este admin
+    mark_chat_read(user.id, id)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="chamados/chat_it.html",
+        context={
+            "request": request,
+            "chamado": chamado,
+            "user": user,
+            "mensagens": mensagens,
+            "participantes": participantes_lista,
+        }
+    )

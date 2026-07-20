@@ -2,6 +2,45 @@
 
 {% block title %}Gestão de Usuários - MaqControl{% endblock %}
 
+{% block extra_head %}
+<style>
+  .perm-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+  .perm-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding: 0.6rem 0.75rem;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.04);
+    cursor: pointer;
+    transition: background 0.18s, border-color 0.18s;
+  }
+  .perm-item:hover {
+    background: rgba(34,197,94,0.08);
+    border-color: rgba(34,197,94,0.25);
+  }
+  .perm-item input[type="checkbox"] {
+    margin-top: 2px;
+    accent-color: #22c55e;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+  .perm-item input[type="checkbox"]:checked ~ .perm-label-text {
+    color: #86efac;
+  }
+  .perm-label-text { line-height: 1.3; }
+  .perm-name { font-size: 0.82rem; font-weight: 600; color: #cbd5e1; display: block; }
+  .perm-desc { font-size: 0.7rem; color: #64748b; display: block; margin-top: 1px; }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="max-w-6xl mx-auto space-y-6 fade-up">
     <!-- Cabeçalho -->
@@ -13,7 +52,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                     </svg>
                 </a>
-                <h1 class="text-3xl font-bold text-verde-400">Usuários</h1>
+                <h1 class="text-3xl font-bold text-verde-400">Gestão de Usuários</h1>
             </div>
             <p class="text-slate-400 text-sm mt-1 ml-8">Controle de acesso e permissões do sistema</p>
         </div>
@@ -47,25 +86,31 @@
                             {% if u.is_admin %}
                                 <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-500/20 text-purple-400 border border-purple-500/30">Admin</span>
                             {% else %}
-                                <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-400 border border-blue-500/30">Padrão</span>
+                                <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-400 border border-blue-500/30">Colaborador</span>
                             {% endif %}
                         </td>
-                        <td class="px-6 py-4 text-slate-400">
+                        <td class="px-6 py-4">
                             {% if u.is_admin %}
-                                <span class="text-xs">Acesso Total</span>
+                                <span class="text-xs text-purple-400 font-semibold">✦ Acesso Total</span>
+                            {% elif u.permissions %}
+                                <div class="flex flex-wrap gap-1">
+                                {% for p in u.permissions %}
+                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-medium bg-verde-500/15 text-verde-400 border border-verde-500/20">{{ p }}</span>
+                                {% endfor %}
+                                </div>
                             {% else %}
-                                <span class="text-xs">{{ u.permissions | join(', ') }}</span>
+                                <span class="text-xs text-slate-600 italic">Sem permissões</span>
                             {% endif %}
                         </td>
                         <td class="px-6 py-4 text-right space-x-2">
                             <!-- Botão Editar -->
-                            <button onclick="openEditModal('{{ u.id }}', '{{ u.name }}', '{{ u.email }}', {{ 'true' if u.is_admin else 'false' }}, {{ u.permissions | tojson }})" 
+                            <button onclick="openEditModal('{{ u.id }}', '{{ u.name }}', '{{ u.email }}', {{ 'true' if u.is_admin else 'false' }}, {{ u.permissions | tojson }})"
                                 class="text-slate-400 hover:text-blue-400 transition-colors p-2" title="Editar">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                 </svg>
                             </button>
-                            
+
                             <!-- Botão Excluir -->
                             {% if u.id != user.id %}
                             <form action="/admin/users/{{ u.id }}/delete" method="POST" class="inline" onsubmit="return confirm('Tem certeza que deseja excluir este usuário?');">
@@ -87,8 +132,8 @@
 
 <!-- Modal Adicionar Usuário -->
 <div id="modal-add-user" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-    <div class="glass-strong w-full max-w-md rounded-2xl shadow-2xl overflow-hidden fade-up">
-        <div class="p-6 border-b border-white/10 flex justify-between items-center bg-white/5">
+    <div class="glass-strong w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden fade-up max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b border-white/10 flex justify-between items-center bg-white/5 sticky top-0 z-10">
             <h2 class="text-xl font-bold text-white">Novo Usuário</h2>
             <button onclick="document.getElementById('modal-add-user').classList.add('hidden')" class="text-slate-400 hover:text-white transition">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -109,21 +154,32 @@
                 <label class="block text-sm font-medium text-slate-300 mb-1">Senha</label>
                 <input type="password" name="password" required class="input-glass" placeholder="Senha de acesso">
             </div>
-            
+
             <div class="pt-2">
-                <label class="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" name="is_admin" value="true" class="w-4 h-4 rounded text-verde-500 focus:ring-verde-500 bg-white/10 border-white/20">
-                    <span class="text-sm font-medium text-purple-400">É Administrador? (Acesso total + Painel)</span>
+                <label class="flex items-center gap-2 cursor-pointer p-3 rounded-xl border border-purple-500/20 bg-purple-500/5 hover:bg-purple-500/10 transition">
+                    <input type="checkbox" name="is_admin" value="true" class="w-4 h-4 rounded accent-purple-500">
+                    <div>
+                        <span class="text-sm font-semibold text-purple-400">Administrador</span>
+                        <p class="text-xs text-slate-500">Acesso total ao sistema, sem restrições</p>
+                    </div>
                 </label>
             </div>
 
-            <div class="pt-4 border-t border-white/10">
-                <label class="block text-sm font-medium text-slate-300 mb-2">Permissões de Módulos</label>
-                <div class="grid grid-cols-2 gap-2 text-sm text-slate-400">
-                    <label class="flex items-center gap-2"><input type="checkbox" name="perm_maquinas" value="true" checked> Máquinas</label>
-                    <label class="flex items-center gap-2"><input type="checkbox" name="perm_setores" value="true" checked> Setores</label>
-                    <label class="flex items-center gap-2"><input type="checkbox" name="perm_chamados" value="true" checked> Chamados</label>
-                    <label class="flex items-center gap-2"><input type="checkbox" name="perm_relatorios" value="true"> Relatórios</label>
+            <div class="pt-2 border-t border-white/10">
+                <label class="block text-sm font-semibold text-slate-300 mb-3">
+                    Permissões de Módulos
+                    <span class="text-xs text-slate-500 font-normal ml-1">(apenas para colaboradores)</span>
+                </label>
+                <div class="perm-grid">
+                    {% for perm_key, perm_name, perm_desc in available_permissions %}
+                    <label class="perm-item">
+                        <input type="checkbox" name="perm_{{ perm_key }}" value="true" checked>
+                        <span class="perm-label-text">
+                            <span class="perm-name">{{ perm_name }}</span>
+                            <span class="perm-desc">{{ perm_desc }}</span>
+                        </span>
+                    </label>
+                    {% endfor %}
                 </div>
             </div>
 
@@ -137,8 +193,8 @@
 
 <!-- Modal Editar Usuário -->
 <div id="modal-edit-user" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-    <div class="glass-strong w-full max-w-md rounded-2xl shadow-2xl overflow-hidden fade-up">
-        <div class="p-6 border-b border-white/10 flex justify-between items-center bg-white/5">
+    <div class="glass-strong w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden fade-up max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b border-white/10 flex justify-between items-center bg-white/5 sticky top-0 z-10">
             <h2 class="text-xl font-bold text-white">Editar Usuário</h2>
             <button onclick="document.getElementById('modal-edit-user').classList.add('hidden')" class="text-slate-400 hover:text-white transition">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -156,24 +212,35 @@
                 <input type="text" name="email" id="edit-email" required class="input-glass">
             </div>
             <div>
-                <label class="block text-sm font-medium text-slate-300 mb-1">Nova Senha (deixe em branco para não alterar)</label>
+                <label class="block text-sm font-medium text-slate-300 mb-1">Nova Senha <span class="text-slate-500 font-normal">(deixe em branco para não alterar)</span></label>
                 <input type="password" name="password" class="input-glass" placeholder="Nova senha">
             </div>
-            
+
             <div class="pt-2">
-                <label class="flex items-center gap-2 cursor-pointer">
-                    <input type="checkbox" name="is_admin" id="edit-is-admin" value="true" class="w-4 h-4 rounded text-verde-500 focus:ring-verde-500 bg-white/10 border-white/20">
-                    <span class="text-sm font-medium text-purple-400">É Administrador?</span>
+                <label class="flex items-center gap-2 cursor-pointer p-3 rounded-xl border border-purple-500/20 bg-purple-500/5 hover:bg-purple-500/10 transition">
+                    <input type="checkbox" name="is_admin" id="edit-is-admin" value="true" class="w-4 h-4 rounded accent-purple-500">
+                    <div>
+                        <span class="text-sm font-semibold text-purple-400">Administrador</span>
+                        <p class="text-xs text-slate-500">Acesso total ao sistema, sem restrições</p>
+                    </div>
                 </label>
             </div>
 
-            <div class="pt-4 border-t border-white/10">
-                <label class="block text-sm font-medium text-slate-300 mb-2">Permissões de Módulos</label>
-                <div class="grid grid-cols-2 gap-2 text-sm text-slate-400">
-                    <label class="flex items-center gap-2"><input type="checkbox" name="perm_maquinas" id="edit-perm-maquinas" value="true"> Máquinas</label>
-                    <label class="flex items-center gap-2"><input type="checkbox" name="perm_setores" id="edit-perm-setores" value="true"> Setores</label>
-                    <label class="flex items-center gap-2"><input type="checkbox" name="perm_chamados" id="edit-perm-chamados" value="true"> Chamados</label>
-                    <label class="flex items-center gap-2"><input type="checkbox" name="perm_relatorios" id="edit-perm-relatorios" value="true"> Relatórios</label>
+            <div class="pt-2 border-t border-white/10">
+                <label class="block text-sm font-semibold text-slate-300 mb-3">
+                    Permissões de Módulos
+                    <span class="text-xs text-slate-500 font-normal ml-1">(apenas para colaboradores)</span>
+                </label>
+                <div class="perm-grid" id="edit-perms-grid">
+                    {% for perm_key, perm_name, perm_desc in available_permissions %}
+                    <label class="perm-item">
+                        <input type="checkbox" id="edit-perm-{{ perm_key }}" name="perm_{{ perm_key }}" value="true">
+                        <span class="perm-label-text">
+                            <span class="perm-name">{{ perm_name }}</span>
+                            <span class="perm-desc">{{ perm_desc }}</span>
+                        </span>
+                    </label>
+                    {% endfor %}
                 </div>
             </div>
 
@@ -186,17 +253,24 @@
 </div>
 
 <script>
+    // Lista canônica de permissões (deve espelhar o backend)
+    const ALL_PERMISSIONS = [
+        "abrir_chamado", "meus_chamados", "chat",
+        "gestao_setores", "gestao_usuarios", "maquinas", "relatorios"
+    ];
+
     function openEditModal(id, name, email, isAdmin, permissions) {
         document.getElementById('form-edit-user').action = '/admin/users/' + id + '/edit';
         document.getElementById('edit-name').value = name;
         document.getElementById('edit-email').value = email;
         document.getElementById('edit-is-admin').checked = isAdmin;
-        
-        document.getElementById('edit-perm-maquinas').checked = permissions.includes('maquinas');
-        document.getElementById('edit-perm-setores').checked = permissions.includes('setores');
-        document.getElementById('edit-perm-chamados').checked = permissions.includes('chamados');
-        document.getElementById('edit-perm-relatorios').checked = permissions.includes('relatorios');
-        
+
+        // Marca cada checkbox de permissão conforme as permissões do usuário
+        ALL_PERMISSIONS.forEach(perm => {
+            const el = document.getElementById('edit-perm-' + perm);
+            if (el) el.checked = permissions.includes(perm);
+        });
+
         document.getElementById('modal-edit-user').classList.remove('hidden');
     }
 </script>

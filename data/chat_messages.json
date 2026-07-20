@@ -1,0 +1,46 @@
+{
+  "e45773c5-5fd9-4ee7-b5c0-c235c35166b8": [
+    {
+      "id": "31c8de7b-879c-492a-8a38-5bd9cc6270c1",
+      "chamado_id": "e45773c5-5fd9-4ee7-b5c0-c235c35166b8",
+      "remetente_id": "894455dd-8e0e-44cf-968a-887c583b12f8",
+      "remetente_nome": "Paulo Roberto",
+      "is_admin": false,
+      "mensagem": "Oi carniça",
+      "timestamp": "2026-07-20T15:23:11.718284",
+      "lido": false
+    }
+  ],
+  "5a227c0c-c67c-4923-add6-98b57e2194de": [
+    {
+      "id": "3f692b25-7f75-42d7-accd-0b10e512a511",
+      "chamado_id": "5a227c0c-c67c-4923-add6-98b57e2194de",
+      "remetente_id": "7d5130b7-41bf-4144-bc70-e3afa81ec67c",
+      "remetente_nome": "Vanessa Fortes",
+      "is_admin": false,
+      "mensagem": "oi",
+      "timestamp": "2026-07-20T17:38:31.678718",
+      "lido": false
+    },
+    {
+      "id": "9b5320d4-fe43-4867-904c-3f689b91899e",
+      "chamado_id": "5a227c0c-c67c-4923-add6-98b57e2194de",
+      "remetente_id": "7d5130b7-41bf-4144-bc70-e3afa81ec67c",
+      "remetente_nome": "Vanessa Fortes",
+      "is_admin": false,
+      "mensagem": "oiuiuiu",
+      "timestamp": "2026-07-20T17:38:37.374202",
+      "lido": false
+    },
+    {
+      "id": "2049db66-1213-4d0f-b77c-979838d4c34e",
+      "chamado_id": "5a227c0c-c67c-4923-add6-98b57e2194de",
+      "remetente_id": "admin-1",
+      "remetente_nome": "Administrador",
+      "is_admin": true,
+      "mensagem": "Oiee",
+      "timestamp": "2026-07-20T17:38:47.582940",
+      "lido": false
+    }
+  ]
+}

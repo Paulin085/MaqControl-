@@ -1,0 +1,430 @@
+{% extends "base.html" %}
+
+{% block title %}Chat — {{ chamado.titulo or 'Chamado' }} — MaqControl{% endblock %}
+
+{% block extra_head %}
+<style>
+  .chat-layout {
+    display: flex;
+    gap: 1rem;
+    height: calc(100vh - 120px);
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  /* ── Sidebar de Participantes ── */
+  .chat-sidebar {
+    width: 220px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .sidebar-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #4b7a5a;
+    padding: 0.5rem 0.75rem 0.25rem;
+  }
+
+  .participant-card {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.6rem 0.75rem;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    transition: background 0.18s;
+  }
+
+  .participant-card:hover {
+    background: rgba(255,255,255,0.09);
+  }
+
+  .participant-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+
+  .avatar-admin { background: rgba(99,102,241,0.25); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.3); }
+  .avatar-col   { background: rgba(34,197,94,0.18);  color: #86efac; border: 1px solid rgba(34,197,94,0.25); }
+
+  .participant-info { min-width: 0; flex: 1; }
+  .participant-name {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .participant-role {
+    font-size: 0.65rem;
+    color: #64748b;
+    margin-top: 1px;
+  }
+  .participant-count {
+    font-size: 0.65rem;
+    color: #4b7a5a;
+    background: rgba(34,197,94,0.1);
+    border-radius: 9999px;
+    padding: 1px 6px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .no-participants {
+    font-size: 0.75rem;
+    color: #4b5563;
+    text-align: center;
+    padding: 1rem 0.5rem;
+    font-style: italic;
+  }
+
+  /* ── Área de Chat ── */
+  .chat-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .chat-header-it {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 18px;
+    margin-bottom: 1rem;
+    flex-shrink: 0;
+  }
+
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 1rem;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 18px;
+    scroll-behavior: smooth;
+  }
+
+  .chat-input-area {
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-end;
+    margin-top: 1rem;
+    flex-shrink: 0;
+  }
+
+  .msg-ti {
+    align-self: flex-end;
+    max-width: 72%;
+    background: rgba(99,102,241,0.18);
+    border: 1px solid rgba(99,102,241,0.3);
+    color: #e0e7ff;
+    border-radius: 18px 18px 4px 18px;
+    padding: 0.65rem 1rem;
+    box-shadow: 0 4px 12px rgba(99,102,241,.15);
+  }
+
+  .msg-col {
+    align-self: flex-start;
+    max-width: 72%;
+    background: rgba(34,197,94,0.12);
+    border: 1px solid rgba(34,197,94,0.25);
+    color: #dcfce7;
+    border-radius: 18px 18px 18px 4px;
+    padding: 0.65rem 1rem;
+  }
+
+  .msg-nome {
+    font-size: 0.68rem;
+    font-weight: 700;
+    opacity: 0.65;
+    margin-bottom: 3px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+
+  .msg-ti .msg-nome  { color: #a5b4fc; }
+  .msg-col .msg-nome { color: #86efac; }
+
+  .msg-texto { font-size: 0.88rem; line-height: 1.45; word-break: break-word; }
+
+  .msg-hora {
+    font-size: 0.65rem;
+    opacity: 0.5;
+    margin-top: 4px;
+    text-align: right;
+  }
+
+  .chat-input {
+    flex: 1;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #f1f5f9;
+    border-radius: 14px;
+    padding: 0.75rem 1rem;
+    resize: none;
+    max-height: 120px;
+    outline: none;
+    transition: border-color .2s;
+    font-family: 'Sora', sans-serif;
+    font-size: 0.9rem;
+  }
+
+  .chat-input:focus { border-color: #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,.12); }
+  .chat-input::placeholder { color: rgba(255,255,255,0.3); }
+
+  .send-btn {
+    background: linear-gradient(135deg, #16a34a, #22c55e);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 0.75rem 1.4rem;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: opacity .2s, transform .15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .send-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+  .send-btn:disabled { opacity: 0.4; cursor: default; transform: none; }
+
+  .status-pill {
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+
+  .pill-fila      { background:rgba(107,114,128,.2); color:#d1d5db; border:1px solid rgba(107,114,128,.4); }
+  .pill-andamento { background:rgba(245,158,11,.2);  color:#fcd34d; border:1px solid rgba(245,158,11,.4); }
+  .pill-concluido { background:rgba(34,197,94,.2);   color:#86efac; border:1px solid rgba(34,197,94,.4); }
+
+  .day-divider {
+    display: flex; align-items: center; gap: .75rem;
+    color: #4b7a5a; font-size: 0.68rem; font-weight: 600;
+    letter-spacing: .06em; text-transform: uppercase; margin: .5rem 0;
+  }
+  .day-divider::before, .day-divider::after {
+    content:''; flex:1; height:1px; background:rgba(255,255,255,0.06);
+  }
+  .msg-new { animation: msgIn .3s ease forwards; }
+  @keyframes msgIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+  /* Mobile: esconde sidebar em telas pequenas */
+  @media (max-width: 640px) {
+    .chat-sidebar { display: none; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="fade-up chat-layout">
+
+  <!-- ── Sidebar de Participantes ── -->
+  <aside class="chat-sidebar">
+    <p class="sidebar-title">Participantes</p>
+
+    {% if participantes %}
+      {% for p in participantes %}
+      <div class="participant-card">
+        <div class="participant-avatar {{ 'avatar-admin' if p.is_admin else 'avatar-col' }}">
+          {{ p.nome[0] | upper }}
+        </div>
+        <div class="participant-info">
+          <p class="participant-name" title="{{ p.nome }}">{{ p.nome }}</p>
+          <p class="participant-role">{{ 'TI / Admin' if p.is_admin else 'Colaborador' }}</p>
+        </div>
+        <span class="participant-count">{{ p.count }}</span>
+      </div>
+      {% endfor %}
+    {% else %}
+      <p class="no-participants">Nenhuma mensagem ainda</p>
+    {% endif %}
+  </aside>
+
+  <!-- ── Área de Chat ── -->
+  <div class="chat-wrap">
+    <div class="chat-header-it">
+      <a href="/chamados/" class="btn-secondary p-2.5 rounded-xl shrink-0">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+        </svg>
+      </a>
+
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 flex-wrap">
+          <h1 class="font-bold text-white text-base truncate">{{ chamado.titulo or 'Chamado sem título' }}</h1>
+          <span class="status-pill
+            {% if chamado.status.value == 'Fila' %}pill-fila
+            {% elif chamado.status.value == 'Em Andamento' %}pill-andamento
+            {% else %}pill-concluido{% endif %}"
+            id="chamado-status">{{ chamado.status.value }}</span>
+        </div>
+        <div class="flex items-center gap-3 mt-0.5">
+          {% if chamado.solicitante %}<span class="text-xs text-slate-500">👤 {{ chamado.solicitante }}</span>{% endif %}
+          {% if chamado.setor_loja %}<span class="text-xs text-verde-400/70">{{ chamado.setor_loja }}</span>{% endif %}
+        </div>
+      </div>
+
+      {% if chamado.status.value != 'Concluído' %}
+      <a href="/chamados/{{ chamado.id }}/editar" class="btn-secondary px-3 py-2 text-xs font-semibold shrink-0">
+        Editar
+      </a>
+      {% endif %}
+    </div>
+
+    <div class="chat-messages" id="chat-messages">
+      {% if not mensagens %}
+      <div class="text-center text-slate-600 text-sm py-8">
+        <p>💬 Nenhuma mensagem ainda.</p>
+        <p class="text-xs mt-1">Envie uma mensagem para iniciar o atendimento.</p>
+      </div>
+      {% endif %}
+
+      {% set last_date = namespace(value='') %}
+      {% for msg in mensagens %}
+        {% set msg_date = msg.timestamp[:10] %}
+        {% if msg_date != last_date.value %}
+          {% set last_date.value = msg_date %}
+          <div class="day-divider">{{ msg_date }}</div>
+        {% endif %}
+
+        {% if msg.is_admin %}
+        <div class="msg-ti">
+          <p class="msg-nome">{{ msg.remetente_nome }}</p>
+          <p class="msg-texto">{{ msg.mensagem }}</p>
+          <p class="msg-hora">{{ msg.timestamp[11:16] }}</p>
+        </div>
+        {% else %}
+        <div class="msg-col">
+          <p class="msg-nome">{{ msg.remetente_nome }}</p>
+          <p class="msg-texto">{{ msg.mensagem }}</p>
+          <p class="msg-hora">{{ msg.timestamp[11:16] }}</p>
+        </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    <div class="chat-input-area">
+      <textarea id="msg-input" class="chat-input" rows="1"
+                placeholder="Responder ao colaborador…"
+                maxlength="1000"
+                onkeydown="onKeyDown(event)"
+                oninput="autoResize(this)"></textarea>
+      <button class="send-btn" id="send-btn" onclick="enviarMensagem()">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+        </svg>
+        Enviar
+      </button>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  const CHAMADO_ID = "{{ chamado.id }}";
+  const USER_NAME = "{{ user.name | replace('"', '\\"') }}";
+  const messagesEl = document.getElementById('chat-messages');
+
+  function scrollBottom(smooth=false) {
+    messagesEl.scrollTo({top:messagesEl.scrollHeight, behavior: smooth?'smooth':'auto'});
+  }
+  scrollBottom(false);
+
+  function autoResize(el) {
+    el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,120)+'px';
+  }
+
+  function onKeyDown(e) {
+    if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); enviarMensagem(); }
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/\n/g,'<br>');
+  }
+
+  function addMessageDOM(msg) {
+    const ph = messagesEl.querySelector('.text-center');
+    if(ph) ph.remove();
+    const div = document.createElement('div');
+    div.className = (msg.is_admin ? 'msg-ti' : 'msg-col') + ' msg-new';
+    div.innerHTML = `<p class="msg-nome">${escapeHtml(msg.remetente_nome)}</p>
+                     <p class="msg-texto">${escapeHtml(msg.mensagem)}</p>
+                     <p class="msg-hora">${(msg.timestamp||'').substring(11,16)}</p>`;
+    messagesEl.appendChild(div);
+    const atBottom = messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight < 120;
+    if(atBottom) scrollBottom(true);
+  }
+
+  async function enviarMensagem() {
+    const input = document.getElementById('msg-input');
+    const btn = document.getElementById('send-btn');
+    const text = input.value.trim();
+    if(!text) return;
+    btn.disabled=true; input.value=''; input.style.height='auto';
+    addMessageDOM({is_admin:true, remetente_nome:USER_NAME, mensagem:text, timestamp:new Date().toISOString()});
+    try {
+      await fetch(`/api/desktop/web/chat/${CHAMADO_ID}`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({mensagem:text})
+      });
+    } catch(e){ console.error(e); }
+    finally{ btn.disabled=false; input.focus(); }
+  }
+
+  let ws, wsDelay=2000;
+  function conectarWS() {
+    const proto = location.protocol==='https:' ? 'wss' : 'ws';
+    ws = new WebSocket(`${proto}://${location.host}/ws/chat/${CHAMADO_ID}`);
+    ws.onopen=()=>{ wsDelay=2000; setInterval(()=>ws.readyState===1&&ws.send('ping'),25000); };
+    ws.onmessage=(e)=>{
+      try{
+        const d=JSON.parse(e.data);
+        if(d.tipo==='pong') return;
+        if(d.tipo==='nova_mensagem_chat' && !d.is_admin) addMessageDOM(d);
+        if(d.tipo==='atualizacao_chamado'){
+          const el=document.getElementById('chamado-status');
+          if(el){
+            const m={'Fila':'pill-fila','Em Andamento':'pill-andamento','Concluído':'pill-concluido'};
+            el.className=`status-pill ${m[d.novo_status]||'pill-fila'}`;
+            el.textContent=d.novo_status;
+          }
+        }
+      }catch(_){}
+    };
+    ws.onclose=()=>{ setTimeout(conectarWS, wsDelay); wsDelay=Math.min(wsDelay*1.5,30000); };
+  }
+  conectarWS();
+</script>
+{% endblock %}

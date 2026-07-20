@@ -1,0 +1,184 @@
+{% extends "colaborador/base_colaborador.html" %}
+
+{% block title %}Novo Chamado — MaqControl{% endblock %}
+
+{% block extra_head %}
+<style>
+  .prioridade-radio { display: none; }
+  .prioridade-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 0.8rem 1rem;
+    border-radius: 14px;
+    border: 2px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.05);
+    cursor: pointer;
+    transition: all .2s;
+    flex: 1;
+    text-align: center;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #94a3b8;
+  }
+  .prioridade-label:hover { border-color: rgba(255,255,255,0.25); color: #cbd5e1; }
+  .prioridade-radio:checked + .prioridade-label {
+    border-color: currentColor;
+    background: rgba(255,255,255,0.1);
+    color: inherit;
+  }
+  .p-baixa  { --c: #86efac; }
+  .p-media  { --c: #fcd34d; }
+  .p-alta   { --c: #fb923c; }
+  .p-critica{ --c: #f87171; }
+
+  .prioridade-radio:checked + .p-baixa   { border-color:#86efac; background:rgba(134,239,172,.12); color:#86efac; }
+  .prioridade-radio:checked + .p-media   { border-color:#fcd34d; background:rgba(252,211,77,.12);  color:#fcd34d; }
+  .prioridade-radio:checked + .p-alta    { border-color:#fb923c; background:rgba(251,146,60,.12);  color:#fb923c; }
+  .prioridade-radio:checked + .p-critica { border-color:#f87171; background:rgba(248,113,113,.12); color:#f87171; }
+
+  .file-drop {
+    border: 2px dashed rgba(255,255,255,0.15);
+    border-radius: 14px;
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .2s, background .2s;
+  }
+  .file-drop:hover { border-color: rgba(34,197,94,.4); background: rgba(34,197,94,.05); }
+  .file-drop.has-file { border-color: rgba(34,197,94,.5); background: rgba(34,197,94,.08); }
+
+  .form-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: #94a3b8;
+    margin-bottom: 0.5rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="fade-up">
+
+  <!-- Cabeçalho -->
+  <div class="flex items-center gap-3 mb-6">
+    <a href="/colaborador/" class="btn-ghost p-2">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+      </svg>
+    </a>
+    <div>
+      <h1 class="text-2xl font-bold text-white">Novo Chamado</h1>
+      <p class="text-sm text-slate-500">Preencha os dados e nossa equipe de TI entrará em contato.</p>
+    </div>
+  </div>
+
+  {% if erro %}
+  <div class="mb-5 p-4 rounded-xl bg-red-500/15 border border-red-500/40 text-red-200 flex items-start gap-3">
+    <svg class="w-5 h-5 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    <span class="text-sm">{{ erro }}</span>
+  </div>
+  {% endif %}
+
+  <!-- Formulário -->
+  <form action="/colaborador/novo" method="POST" enctype="multipart/form-data" class="space-y-5">
+
+    <!-- Setor / Local -->
+    <div>
+      <label for="setor_loja" class="form-label">Setor ou Local</label>
+      <select id="setor_loja" name="setor_loja" class="input-col">
+        <option value="">Selecione o setor…</option>
+        {% for s in setores %}
+        <option value="{{ s.nome }}"
+          {% if dados and dados.setor_loja == s.nome %}selected{% endif %}>
+          {{ s.nome }}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Assunto -->
+    <div>
+      <label for="assunto" class="form-label">Assunto <span class="text-red-400">*</span></label>
+      <input type="text" id="assunto" name="assunto"
+             value="{{ dados.assunto if dados else '' }}"
+             placeholder="Ex: Computador não liga, Impressora com erro…"
+             class="input-col" required>
+    </div>
+
+    <!-- Descrição -->
+    <div>
+      <label for="descricao" class="form-label">Descrição <span class="text-red-400">*</span></label>
+      <textarea id="descricao" name="descricao" rows="4"
+                placeholder="Descreva o problema com o máximo de detalhes possível…"
+                class="input-col" required>{{ dados.descricao if dados else '' }}</textarea>
+    </div>
+
+
+
+    <!-- Anexo -->
+    <div>
+      <label class="form-label">Anexo <span class="text-slate-600">(opcional)</span></label>
+      <div class="file-drop" id="file-drop" onclick="document.getElementById('anexo').click()">
+        <input type="file" id="anexo" name="anexo" class="hidden" onchange="onFileChange(this)">
+        <svg class="w-8 h-8 mx-auto mb-2 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+            d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+        </svg>
+        <p id="file-label" class="text-sm text-slate-500">Clique para selecionar foto ou documento</p>
+        <p class="text-xs text-slate-600 mt-1">PNG, JPG, PDF, DOCX…</p>
+      </div>
+    </div>
+
+    <!-- Botão enviar -->
+    <div class="pt-2">
+      <button type="submit" class="btn-col w-full py-4 text-lg" id="btn-submit">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+            d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+        </svg>
+        Abrir Chamado
+      </button>
+    </div>
+
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  function onFileChange(input) {
+    const drop = document.getElementById('file-drop');
+    const label = document.getElementById('file-label');
+    if (input.files && input.files[0]) {
+      label.textContent = '📎 ' + input.files[0].name;
+      label.classList.add('text-verde-400');
+      label.classList.remove('text-slate-500');
+      drop.classList.add('has-file');
+    } else {
+      label.textContent = 'Clique para selecionar foto ou documento';
+      label.classList.remove('text-verde-400');
+      label.classList.add('text-slate-500');
+      drop.classList.remove('has-file');
+    }
+  }
+
+  // Desabilita botão ao submeter para evitar duplo clique
+  document.querySelector('form').addEventListener('submit', () => {
+    const btn = document.getElementById('btn-submit');
+    btn.disabled = true;
+    btn.innerHTML = `
+      <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+      </svg>
+      Enviando…`;
+  });
+</script>
+{% endblock %}

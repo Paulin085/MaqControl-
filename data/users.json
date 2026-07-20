@@ -18,9 +18,9 @@
         "email": "vanessa",
         "is_admin": false,
         "permissions": [
-            "maquinas",
-            "setores",
-            "chamados"
+            "abrir_chamado",
+            "meus_chamados",
+            "chat"
         ],
         "id": "7d5130b7-41bf-4144-bc70-e3afa81ec67c",
         "hashed_password": "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92"

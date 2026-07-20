@@ -1,0 +1,449 @@
+{% extends "colaborador/base_colaborador.html" %}
+
+{% block title %}Chat — {{ chamado.titulo or 'Chamado' }} — MaqControl{% endblock %}
+
+{% block extra_head %}
+<style>
+  html, body { height: 100%; overflow: hidden; }
+  main { padding: 0 !important; height: calc(100vh - 56px); display: flex; flex-direction: column; }
+
+  /* Override max-w for chat */
+  main > div { max-width: 100%; padding: 0; height: 100%; }
+
+  .chat-header {
+    padding: 0.9rem 1.2rem;
+    background: rgba(10, 26, 15, 0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.2rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    scroll-behavior: smooth;
+  }
+
+  .chat-input-area {
+    padding: 0.8rem 1rem;
+    background: rgba(10, 26, 15, 0.85);
+    backdrop-filter: blur(16px);
+    border-top: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    align-items: flex-end;
+    gap: 0.6rem;
+    flex-shrink: 0;
+  }
+
+  /* Bolha de mensagem — colaborador (direita, verde) */
+  .msg-col {
+    align-self: flex-end;
+    max-width: 78%;
+    background: linear-gradient(135deg, #15803d, #16a34a);
+    color: #fff;
+    border-radius: 18px 18px 4px 18px;
+    padding: 0.65rem 1rem;
+    position: relative;
+    box-shadow: 0 4px 16px rgba(22,163,74,.3);
+  }
+
+  /* Bolha de mensagem — TI (esquerda, cinza) */
+  .msg-ti {
+    align-self: flex-start;
+    max-width: 78%;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #e2e8f0;
+    border-radius: 18px 18px 18px 4px;
+    padding: 0.65rem 1rem;
+  }
+
+  .msg-nome {
+    font-size: 0.68rem;
+    font-weight: 700;
+    opacity: 0.7;
+    margin-bottom: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .msg-texto { font-size: 0.9rem; line-height: 1.45; word-break: break-word; }
+
+  .msg-hora {
+    font-size: 0.65rem;
+    opacity: 0.55;
+    margin-top: 4px;
+    text-align: right;
+  }
+
+  .msg-col .msg-hora { color: rgba(255,255,255,0.7); }
+
+  .chat-input {
+    flex: 1;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #f1f5f9;
+    border-radius: 22px;
+    padding: 0.65rem 1.2rem;
+    resize: none;
+    max-height: 120px;
+    outline: none;
+    transition: border-color .2s;
+    font-family: 'Sora', sans-serif;
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+
+  .chat-input:focus { border-color: #22c55e; }
+  .chat-input::placeholder { color: rgba(255,255,255,0.3); }
+
+  .send-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #16a34a, #22c55e);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: transform .15s, opacity .15s;
+    box-shadow: 0 4px 12px rgba(34,197,94,.35);
+  }
+
+  .send-btn:hover { transform: scale(1.05); }
+  .send-btn:active { transform: scale(0.95); opacity: 0.85; }
+  .send-btn:disabled { opacity: 0.4; cursor: default; }
+
+  .status-bar {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 99px;
+  }
+
+  .status-fila      { background:rgba(107,114,128,.2); color:#d1d5db; border:1px solid rgba(107,114,128,.4); }
+  .status-andamento { background:rgba(245,158,11,.2);  color:#fcd34d; border:1px solid rgba(245,158,11,.4); }
+  .status-concluido { background:rgba(34,197,94,.2);   color:#86efac; border:1px solid rgba(34,197,94,.4); }
+
+  .scroll-bottom-btn {
+    position: absolute;
+    bottom: 80px;
+    right: 16px;
+    background: rgba(22,163,74,.9);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,.3);
+    transition: opacity .2s;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .scroll-bottom-btn.visible { opacity: 1; pointer-events: all; }
+
+  .day-divider {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: #4b7a5a;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    margin: 0.5rem 0;
+  }
+
+  .day-divider::before,
+  .day-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: rgba(255,255,255,0.06);
+  }
+
+  .msg-new-indicator {
+    animation: msgIn .3s ease forwards;
+  }
+
+  @keyframes msgIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="flex flex-col h-full" style="max-width:100%; padding:0;">
+
+  <!-- Chat Header -->
+  <div class="chat-header">
+    <a href="/colaborador/" class="btn-ghost p-2 shrink-0">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+      </svg>
+    </a>
+
+    <div class="flex-1 min-w-0">
+      <p class="font-bold text-white text-sm truncate">{{ chamado.titulo or 'Chamado sem título' }}</p>
+      {% if chamado.setor_loja %}
+      <p class="text-xs text-slate-500 truncate">{{ chamado.setor_loja }}</p>
+      {% endif %}
+    </div>
+
+    <span class="status-bar shrink-0
+      {% if chamado.status.value == 'Fila' %}status-fila
+      {% elif chamado.status.value == 'Em Andamento' %}status-andamento
+      {% else %}status-concluido{% endif %}"
+      id="chamado-status">
+      {{ chamado.status.value }}
+    </span>
+  </div>
+
+  <!-- Área de mensagens -->
+  <div class="chat-messages" id="chat-messages">
+
+    {% if not mensagens %}
+    <div class="text-center text-slate-600 text-sm py-8">
+      <p>💬 Nenhuma mensagem ainda.</p>
+      <p class="text-xs mt-1">Envie uma mensagem para a equipe de TI.</p>
+    </div>
+    {% endif %}
+
+    {% set last_date = namespace(value='') %}
+    {% for msg in mensagens %}
+      {% set msg_date = msg.timestamp[:10] %}
+      {% if msg_date != last_date.value %}
+        {% set last_date.value = msg_date %}
+        <div class="day-divider">
+          {% if msg_date == hoje_str %}Hoje{% else %}{{ msg_date }}{% endif %}
+        </div>
+      {% endif %}
+
+      {% if msg.is_admin %}
+      <!-- Mensagem da TI (esquerda) -->
+      <div class="msg-ti">
+        <p class="msg-nome text-verde-400">🖥 {{ msg.remetente_nome }}</p>
+        <p class="msg-texto">{{ msg.mensagem }}</p>
+        <p class="msg-hora">{{ msg.timestamp[11:16] }}</p>
+      </div>
+      {% else %}
+      <!-- Mensagem do colaborador (direita) -->
+      <div class="msg-col">
+        <p class="msg-texto">{{ msg.mensagem }}</p>
+        <p class="msg-hora">{{ msg.timestamp[11:16] }}</p>
+      </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  <!-- Botão scroll to bottom -->
+  <button class="scroll-bottom-btn" id="scroll-btn" onclick="scrollBottom(true)"
+          title="Rolar para o final" style="position:fixed;">
+    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+    </svg>
+  </button>
+
+  <!-- Input -->
+  {% if chamado.status.value != 'Concluído' %}
+  <div class="chat-input-area" style="max-width:100%;">
+    <textarea id="msg-input" class="chat-input" rows="1"
+              placeholder="Digite uma mensagem…"
+              maxlength="1000"
+              onkeydown="onKeyDown(event)"
+              oninput="autoResize(this)"></textarea>
+    <button class="send-btn" id="send-btn" onclick="enviarMensagem()" title="Enviar">
+      <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+          d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+      </svg>
+    </button>
+  </div>
+  {% else %}
+  <div class="chat-input-area justify-center">
+    <p class="text-sm text-verde-400 font-medium">✅ Chamado concluído — chat encerrado</p>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  const CHAMADO_ID = "{{ chamado.id }}";
+  const USER_IS_ADMIN = false;
+  const USER_NAME = "{{ user.name | replace('"', '\\"') }}";
+
+  const messagesEl = document.getElementById('chat-messages');
+  const scrollBtn = document.getElementById('scroll-btn');
+
+  // ── Scroll ────────────────────────────────────────────────────────────────
+  function scrollBottom(smooth = false) {
+    messagesEl.scrollTo({ top: messagesEl.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
+  }
+
+  messagesEl.addEventListener('scroll', () => {
+    const atBottom = messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight < 80;
+    scrollBtn.classList.toggle('visible', !atBottom);
+  });
+
+  scrollBottom(false);
+
+  // ── Auto-resize textarea ──────────────────────────────────────────────────
+  function autoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+  }
+
+  function onKeyDown(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      enviarMensagem();
+    }
+  }
+
+  // ── Formata hora ──────────────────────────────────────────────────────────
+  function formatHora(isoStr) {
+    return isoStr ? isoStr.substring(11, 16) : '';
+  }
+
+  // ── Adiciona mensagem ao DOM ──────────────────────────────────────────────
+  function addMessageDOM(msg) {
+    // Remove placeholder se existir
+    const placeholder = messagesEl.querySelector('.text-center');
+    if (placeholder) placeholder.remove();
+
+    const div = document.createElement('div');
+    const isAdmin = msg.is_admin;
+
+    div.className = (isAdmin ? 'msg-ti' : 'msg-col') + ' msg-new-indicator';
+    div.innerHTML = isAdmin
+      ? `<p class="msg-nome text-verde-400">🖥 ${escapeHtml(msg.remetente_nome)}</p>
+         <p class="msg-texto">${escapeHtml(msg.mensagem)}</p>
+         <p class="msg-hora">${formatHora(msg.timestamp)}</p>`
+      : `<p class="msg-texto">${escapeHtml(msg.mensagem)}</p>
+         <p class="msg-hora">${formatHora(msg.timestamp)}</p>`;
+
+    messagesEl.appendChild(div);
+
+    const atBottom = messagesEl.scrollHeight - messagesEl.scrollTop - messagesEl.clientHeight < 120;
+    if (atBottom) scrollBottom(true);
+  }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/\n/g,'<br>');
+  }
+
+  // ── Envio de mensagem ─────────────────────────────────────────────────────
+  async function enviarMensagem() {
+    const input = document.getElementById('msg-input');
+    const sendBtn = document.getElementById('send-btn');
+    const text = input.value.trim();
+    if (!text) return;
+
+    sendBtn.disabled = true;
+    input.value = '';
+    input.style.height = 'auto';
+
+    // Otimista: adiciona ao DOM imediatamente
+    addMessageDOM({
+      is_admin: false,
+      remetente_nome: USER_NAME,
+      mensagem: text,
+      timestamp: new Date().toISOString()
+    });
+
+    try {
+      const res = await fetch(`/api/desktop/web/chat/${CHAMADO_ID}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mensagem: text })
+      });
+      if (!res.ok) {
+        showToast('Erro ao enviar mensagem. Tente novamente.', 'error');
+      }
+    } catch (err) {
+      showToast('Falha de rede. Verifique sua conexão.', 'error');
+    } finally {
+      sendBtn.disabled = false;
+      input.focus();
+    }
+  }
+
+  // ── WebSocket ─────────────────────────────────────────────────────────────
+  let ws;
+  let wsReconnectDelay = 2000;
+
+  function conectarWS() {
+    const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+    ws = new WebSocket(`${proto}://${location.host}/ws/chat/${CHAMADO_ID}`);
+
+    ws.onopen = () => {
+      wsReconnectDelay = 2000;
+      setInterval(() => ws.readyState === WebSocket.OPEN && ws.send('ping'), 25000);
+    };
+
+    ws.onmessage = (e) => {
+      try {
+        const data = JSON.parse(e.data);
+        if (data.tipo === 'pong') return;
+
+        if (data.tipo === 'nova_mensagem_chat') {
+          // Só adiciona mensagens da TI (as do colaborador já foram adicionadas otimisticamente)
+          if (data.is_admin) {
+            addMessageDOM(data);
+            // Notificação sonora / visual leve
+            showToast(`💬 Nova mensagem da TI`);
+          }
+        }
+
+        if (data.tipo === 'atualizacao_chamado') {
+          const statusEl = document.getElementById('chamado-status');
+          if (statusEl) {
+            const classMap = {
+              'Fila':         'status-fila',
+              'Em Andamento': 'status-andamento',
+              'Concluído':    'status-concluido',
+            };
+            statusEl.className = `status-bar shrink-0 ${classMap[data.novo_status] || 'status-fila'}`;
+            statusEl.textContent = data.novo_status;
+          }
+
+          if (data.novo_status === 'Concluído') {
+            showToast('✅ Seu chamado foi concluído!');
+            // Desabilita o input
+            const inputArea = document.querySelector('.chat-input-area');
+            if (inputArea) {
+              inputArea.innerHTML = `<p class="text-sm text-verde-400 font-medium w-full text-center">✅ Chamado concluído — chat encerrado</p>`;
+            }
+          } else {
+            showToast(`Status do chamado: <strong>${data.novo_status}</strong>`);
+          }
+        }
+      } catch (_) {}
+    };
+
+    ws.onclose = () => {
+      setTimeout(conectarWS, wsReconnectDelay);
+      wsReconnectDelay = Math.min(wsReconnectDelay * 1.5, 30000);
+    };
+  }
+
+  conectarWS();
+</script>
+{% endblock %}

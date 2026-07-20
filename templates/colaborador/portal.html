@@ -1,0 +1,504 @@
+{% extends "colaborador/base_colaborador.html" %}
+
+{% block title %}Chamados que Abri — MaqControl{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* ── Status Cards ── */
+  .status-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  @media (max-width: 480px) {
+    .status-cards { grid-template-columns: 1fr; }
+  }
+
+  .status-card {
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(12px);
+    border: 2px solid transparent;
+    border-radius: 20px;
+    padding: 1.25rem 1rem;
+    cursor: pointer;
+    transition: border-color .25s, background .25s, transform .2s;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .status-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity .25s;
+  }
+
+  .status-card:hover { transform: translateY(-3px); }
+  .status-card.active { transform: translateY(-2px); }
+
+  /* Fila */
+  .card-fila { border-color: rgba(107,114,128,0.3); }
+  .card-fila::before { background: radial-gradient(ellipse at top, rgba(107,114,128,0.08), transparent 70%); }
+  .card-fila:hover, .card-fila.active { border-color: rgba(107,114,128,0.7); background: rgba(107,114,128,0.1); }
+  .card-fila::before { opacity: 1; }
+  .icon-fila { color: #9ca3af; }
+  .count-fila { color: #d1d5db; }
+
+  /* Em Atendimento */
+  .card-andamento { border-color: rgba(245,158,11,0.3); }
+  .card-andamento::before { background: radial-gradient(ellipse at top, rgba(245,158,11,0.08), transparent 70%); }
+  .card-andamento:hover, .card-andamento.active { border-color: rgba(245,158,11,0.7); background: rgba(245,158,11,0.1); }
+  .icon-andamento { color: #fbbf24; }
+  .count-andamento { color: #fcd34d; }
+
+  /* Concluídos */
+  .card-concluido { border-color: rgba(34,197,94,0.3); }
+  .card-concluido::before { background: radial-gradient(ellipse at top, rgba(34,197,94,0.08), transparent 70%); }
+  .card-concluido:hover, .card-concluido.active { border-color: rgba(34,197,94,0.7); background: rgba(34,197,94,0.1); }
+  .icon-concluido { color: #22c55e; }
+  .count-concluido { color: #86efac; }
+
+  .card-count {
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 0.3rem;
+    display: block;
+  }
+
+  .card-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: #94a3b8;
+    display: block;
+  }
+
+  .card-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.6rem;
+    display: block;
+  }
+
+  /* ── Lista de Chamados (expansível) ── */
+  .lista-section {
+    display: none;
+  }
+  .lista-section.visible {
+    display: block;
+    animation: fadeUp 0.3s ease forwards;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .section-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+
+  .section-close {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #94a3b8;
+    border-radius: 8px;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: background .2s;
+  }
+  .section-close:hover { background: rgba(255,255,255,0.13); }
+
+  /* ── Chamado Cards ── */
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 9999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .pill-fila      { background: rgba(107,114,128,.2); color: #d1d5db; border:1px solid rgba(107,114,128,.4); }
+  .pill-andamento { background: rgba(245,158,11,.2);  color: #fcd34d; border:1px solid rgba(245,158,11,.4); }
+  .pill-concluido { background: rgba(34,197,94,.2);   color: #86efac; border:1px solid rgba(34,197,94,.4); }
+
+  .chamado-card {
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 18px;
+    padding: 1.2rem 1.4rem;
+    transition: border-color .25s, background .25s;
+  }
+
+  .chamado-card:hover {
+    border-color: rgba(34,197,94,0.3);
+    background: rgba(255,255,255,0.09);
+  }
+
+  .chat-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.5rem 1rem;
+    border-radius: 10px;
+    background: rgba(34,197,94,0.12);
+    border: 1px solid rgba(34,197,94,0.25);
+    color: #86efac;
+    font-size: 0.82rem;
+    font-weight: 600;
+    transition: background .2s;
+    text-decoration: none;
+  }
+  .chat-btn:hover { background: rgba(34,197,94,0.22); }
+
+  .unread-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: #ef4444;
+    color: white;
+    font-size: 0.65rem;
+    font-weight: 700;
+    border-radius: 9999px;
+    min-width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
+    border: 2px solid #0a1a0f;
+  }
+
+  .fab-novo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, #16a34a, #22c55e);
+    color: white;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 1rem 2rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(34,197,94,0.35);
+    transition: transform .2s, box-shadow .2s;
+    text-decoration: none;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .fab-novo:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(34,197,94,0.45);
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 2rem 1rem;
+    color: #4b7a5a;
+  }
+
+  .new-chamado-flash {
+    animation: flashCard 1s ease;
+  }
+
+  @keyframes flashCard {
+    0%   { border-color: rgba(34,197,94,0.8); background: rgba(34,197,94,0.15); }
+    100% { border-color: rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="fade-up space-y-5">
+
+  <!-- Botão Novo Chamado -->
+  <a href="/colaborador/novo" class="fab-novo" id="btn-novo">
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+    </svg>
+    Novo Chamado
+  </a>
+
+  <!-- Título -->
+  <div class="flex items-center justify-between">
+    <h1 class="text-xl font-bold text-white">Chamados que Abri</h1>
+    <span class="text-xs text-slate-500 font-medium">{{ chamados|length }} total</span>
+  </div>
+
+  <!-- 3 Cards de Status -->
+  <div class="status-cards">
+
+    <!-- Em Fila -->
+    <div class="status-card card-fila" id="card-fila-btn" onclick="toggleLista('fila')">
+      <span class="card-icon">🕐</span>
+      <span class="card-count count-fila">{{ contagens.fila }}</span>
+      <span class="card-label">Em Fila</span>
+    </div>
+
+    <!-- Em Atendimento -->
+    <div class="status-card card-andamento" id="card-andamento-btn" onclick="toggleLista('andamento')">
+      <span class="card-icon">⚡</span>
+      <span class="card-count count-andamento">{{ contagens.andamento }}</span>
+      <span class="card-label">Em Atendimento</span>
+    </div>
+
+    <!-- Concluídos -->
+    <div class="status-card card-concluido" id="card-concluido-btn" onclick="toggleLista('concluido')">
+      <span class="card-icon">✅</span>
+      <span class="card-count count-concluido">{{ contagens.concluidos }}</span>
+      <span class="card-label">Concluídos</span>
+    </div>
+
+  </div>
+
+  <!-- Lista: Em Fila -->
+  <div class="lista-section" id="lista-fila">
+    <div class="section-header">
+      <span class="section-title" style="color:#9ca3af">🕐 Em Fila</span>
+      <button class="section-close" onclick="fecharLista('fila')">✕ Fechar</button>
+    </div>
+    {% if em_fila %}
+    <div class="space-y-3">
+      {% for c in em_fila %}
+      {% include "colaborador/_chamado_card.html" ignore missing %}
+      <div class="chamado-card fade-up" id="card-{{ c.id }}" data-chamado-id="{{ c.id }}">
+        {% include "colaborador/_card_content.html" ignore missing %}
+        <div class="flex items-start justify-between gap-3 mb-3">
+          <span class="status-pill pill-fila">
+            <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>{{ c.status.value }}
+          </span>
+          <span class="text-xs text-slate-500 shrink-0">{{ c.data_registro.strftime('%d/%m/%Y %H:%M') }}</span>
+        </div>
+        <p class="font-semibold text-white text-base leading-snug mb-1">{{ c.titulo or 'Chamado sem título' }}</p>
+        {% if c.setor_loja %}<p class="text-xs text-verde-400/80 mb-3">{{ c.setor_loja }}</p>{% else %}<div class="mb-3"></div>{% endif %}
+        <p class="text-sm text-slate-400 line-clamp-2 mb-4">{{ c.descricao }}</p>
+        <div class="flex items-center justify-end">
+          <a href="/colaborador/chat/{{ c.id }}" class="chat-btn" id="chat-btn-{{ c.id }}">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+            </svg>
+            Chat
+            {% if unread.get(c.id, 0) > 0 %}
+            <span class="unread-badge" id="badge-{{ c.id }}">{{ unread[c.id] }}</span>
+            {% else %}
+            <span class="unread-badge hidden" id="badge-{{ c.id }}"></span>
+            {% endif %}
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state"><p class="text-sm text-slate-600">Nenhum chamado em fila.</p></div>
+    {% endif %}
+  </div>
+
+  <!-- Lista: Em Atendimento -->
+  <div class="lista-section" id="lista-andamento">
+    <div class="section-header">
+      <span class="section-title" style="color:#fbbf24">⚡ Em Atendimento</span>
+      <button class="section-close" onclick="fecharLista('andamento')">✕ Fechar</button>
+    </div>
+    {% if em_andamento %}
+    <div class="space-y-3">
+      {% for c in em_andamento %}
+      <div class="chamado-card fade-up" id="card-{{ c.id }}" data-chamado-id="{{ c.id }}">
+        <div class="flex items-start justify-between gap-3 mb-3">
+          <span class="status-pill pill-andamento">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>{{ c.status.value }}
+          </span>
+          <span class="text-xs text-slate-500 shrink-0">{{ c.data_registro.strftime('%d/%m/%Y %H:%M') }}</span>
+        </div>
+        <p class="font-semibold text-white text-base leading-snug mb-1">{{ c.titulo or 'Chamado sem título' }}</p>
+        {% if c.setor_loja %}<p class="text-xs text-verde-400/80 mb-3">{{ c.setor_loja }}</p>{% else %}<div class="mb-3"></div>{% endif %}
+        <p class="text-sm text-slate-400 line-clamp-2 mb-4">{{ c.descricao }}</p>
+        <div class="flex items-center justify-end">
+          <a href="/colaborador/chat/{{ c.id }}" class="chat-btn" id="chat-btn-{{ c.id }}">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+            </svg>
+            Chat
+            {% if unread.get(c.id, 0) > 0 %}
+            <span class="unread-badge" id="badge-{{ c.id }}">{{ unread[c.id] }}</span>
+            {% else %}
+            <span class="unread-badge hidden" id="badge-{{ c.id }}"></span>
+            {% endif %}
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state"><p class="text-sm text-slate-600">Nenhum chamado em atendimento.</p></div>
+    {% endif %}
+  </div>
+
+  <!-- Lista: Concluídos -->
+  <div class="lista-section" id="lista-concluido">
+    <div class="section-header">
+      <span class="section-title" style="color:#22c55e">✅ Concluídos</span>
+      <button class="section-close" onclick="fecharLista('concluido')">✕ Fechar</button>
+    </div>
+    {% if concluidos %}
+    <div class="space-y-3">
+      {% for c in concluidos %}
+      <div class="chamado-card fade-up" id="card-{{ c.id }}" data-chamado-id="{{ c.id }}">
+        <div class="flex items-start justify-between gap-3 mb-3">
+          <span class="status-pill pill-concluido">
+            <span class="w-1.5 h-1.5 rounded-full bg-verde-400"></span>{{ c.status.value }}
+          </span>
+          <span class="text-xs text-slate-500 shrink-0">{{ c.data_registro.strftime('%d/%m/%Y %H:%M') }}</span>
+        </div>
+        <p class="font-semibold text-white text-base leading-snug mb-1">{{ c.titulo or 'Chamado sem título' }}</p>
+        {% if c.setor_loja %}<p class="text-xs text-verde-400/80 mb-3">{{ c.setor_loja }}</p>{% else %}<div class="mb-3"></div>{% endif %}
+        <p class="text-sm text-slate-400 line-clamp-2 mb-2">{{ c.descricao }}</p>
+        {% if c.resolucao %}
+        <div class="p-3 bg-verde-500/10 border border-verde-500/20 rounded-xl mb-4">
+          <p class="text-[11px] text-verde-400 font-bold uppercase mb-1">✓ Solução aplicada</p>
+          <p class="text-xs text-slate-300 italic">{{ c.resolucao }}</p>
+        </div>
+        {% else %}<div class="mb-4"></div>{% endif %}
+        <div class="flex items-center justify-end">
+          <a href="/colaborador/chat/{{ c.id }}" class="chat-btn" id="chat-btn-{{ c.id }}">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+            </svg>
+            Chat
+            {% if unread.get(c.id, 0) > 0 %}
+            <span class="unread-badge" id="badge-{{ c.id }}">{{ unread[c.id] }}</span>
+            {% else %}
+            <span class="unread-badge hidden" id="badge-{{ c.id }}"></span>
+            {% endif %}
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state"><p class="text-sm text-slate-600">Nenhum chamado concluído.</p></div>
+    {% endif %}
+  </div>
+
+  <!-- Estado vazio (sem nenhum chamado) -->
+  {% if not chamados %}
+  <div class="empty-state fade-up">
+    <svg class="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+        d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25"/>
+    </svg>
+    <p class="text-lg font-semibold text-slate-500 mb-2">Nenhum chamado ainda</p>
+    <p class="text-sm text-slate-600">Clique em <strong class="text-verde-500">Novo Chamado</strong> para abrir sua primeira solicitação.</p>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  // ── Lógica dos 3 Cards de Status ──────────────────────────────────────────
+  let listaAtiva = null;
+
+  function toggleLista(tipo) {
+    const lista = document.getElementById('lista-' + tipo);
+    const btnCard = document.getElementById('card-' + tipo + '-btn');
+
+    if (listaAtiva === tipo) {
+      // Fecha se já está aberta
+      fecharLista(tipo);
+      return;
+    }
+
+    // Fecha a lista anterior
+    if (listaAtiva) {
+      fecharLista(listaAtiva, false);
+    }
+
+    // Abre a nova
+    lista.classList.add('visible');
+    btnCard.classList.add('active');
+    listaAtiva = tipo;
+
+    // Scroll suave até a lista
+    setTimeout(() => lista.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+  }
+
+  function fecharLista(tipo, resetAtiva = true) {
+    const lista = document.getElementById('lista-' + tipo);
+    const btnCard = document.getElementById('card-' + tipo + '-btn');
+    if (lista) lista.classList.remove('visible');
+    if (btnCard) btnCard.classList.remove('active');
+    if (resetAtiva) listaAtiva = null;
+  }
+
+  // ── WebSocket de notificações ─────────────────────────────────────────────
+  let ws;
+  let wsReconnectDelay = 2000;
+
+  function conectarWS() {
+    const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+    ws = new WebSocket(`${proto}://${location.host}/ws/notificacoes`);
+
+    ws.onopen = () => {
+      wsReconnectDelay = 2000;
+      setInterval(() => ws.readyState === WebSocket.OPEN && ws.send('ping'), 25000);
+    };
+
+    ws.onmessage = (e) => {
+      try {
+        const data = JSON.parse(e.data);
+        if (data.tipo === 'pong') return;
+        handleNotificacao(data);
+      } catch (_) {}
+    };
+
+    ws.onclose = () => {
+      setTimeout(conectarWS, wsReconnectDelay);
+      wsReconnectDelay = Math.min(wsReconnectDelay * 1.5, 30000);
+    };
+  }
+
+  function handleNotificacao(data) {
+    if (data.tipo === 'atualizacao_chamado') {
+      const card = document.getElementById(`card-${data.chamado_id}`);
+      if (card) { card.classList.add('new-chamado-flash'); }
+      showToast(`Status do chamado atualizado: <strong>${data.novo_status}</strong>`);
+      // Recarrega a página para atualizar os contadores dos cards
+      setTimeout(() => location.reload(), 1500);
+    }
+
+    if (data.tipo === 'nova_mensagem') {
+      const badge = document.getElementById(`badge-${data.chamado_id}`);
+      if (badge) {
+        const atual = parseInt(badge.textContent || '0') || 0;
+        badge.textContent = atual + 1;
+        badge.classList.remove('hidden');
+      }
+      showToast(`💬 Nova mensagem da TI no chamado "<strong>${data.chamado_titulo || ''}</strong>"`);
+    }
+  }
+
+  conectarWS();
+</script>
+{% endblock %}

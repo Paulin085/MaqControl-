@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}MaqControl — Portal do Colaborador{% endblock %}</title>
+
+  <link rel="icon" href="/static/empresa.png" type="image/png">
+  <link rel="apple-touch-icon" href="/static/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="MaqControl">
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts: Sora + Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Sora', 'sans-serif'], body: ['Inter', 'sans-serif'] },
+          colors: {
+            verde: {
+              50: '#f0fdf4', 100: '#dcfce7', 200: '#bbf7d0',
+              300: '#86efac', 400: '#4ade80', 500: '#22c55e',
+              600: '#16a34a', 700: '#15803d', 800: '#166534',
+              900: '#14532d', 950: '#052e16',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Sora', sans-serif;
+      min-height: 100vh;
+      background: #0a1a0f;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    #bg-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(16px) saturate(180%);
+      -webkit-backdrop-filter: blur(16px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .input-col {
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #f1f5f9;
+      border-radius: 12px;
+      padding: 0.65rem 1rem;
+      width: 100%;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+
+    .input-col:focus {
+      border-color: #22c55e;
+      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+    }
+
+    .input-col::placeholder { color: rgba(255, 255, 255, 0.3); }
+    .input-col option { background-color: #143524; color: #f1f5f9; }
+
+    .btn-col {
+      background: linear-gradient(135deg, #16a34a, #22c55e);
+      color: #fff;
+      padding: 0.75rem 2rem;
+      border-radius: 14px;
+      font-weight: 700;
+      font-size: 1rem;
+      transition: opacity 0.2s, transform 0.15s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-col:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-col:active { transform: scale(0.98); }
+
+    .btn-ghost {
+      background: rgba(255, 255, 255, 0.08);
+      color: #d1fae5;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 0.6rem 1.2rem;
+      border-radius: 10px;
+      font-weight: 500;
+      transition: background 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-ghost:hover { background: rgba(255, 255, 255, 0.15); }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-up { animation: fadeUp 0.4s ease forwards; }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(34, 197, 94, 0.3); border-radius: 3px; }
+
+    /* Toast notifications */
+    #toast-container {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .toast {
+      background: rgba(20, 53, 36, 0.95);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(34, 197, 94, 0.4);
+      border-radius: 12px;
+      padding: 0.9rem 1.2rem;
+      color: #d1fae5;
+      max-width: 320px;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      animation: toastIn 0.3s ease forwards;
+    }
+
+    .toast-error {
+      border-color: rgba(239, 68, 68, 0.4);
+      background: rgba(80, 10, 10, 0.95);
+    }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateX(20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes toastOut {
+      from { opacity: 1; transform: translateX(0); }
+      to { opacity: 0; transform: translateX(20px); }
+    }
+
+    .toast.removing { animation: toastOut 0.3s ease forwards; }
+  </style>
+
+  {% block extra_head %}{% endblock %}
+</head>
+
+<body class="h-full text-slate-100">
+
+  <!-- Fundo animado -->
+  <canvas id="bg-canvas"></canvas>
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <!-- Header fixo -->
+  <header class="relative z-10 glass sticky top-0">
+    <div class="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
+      <!-- Logo + título -->
+      <a href="/colaborador/" class="flex items-center gap-3">
+        <img src="/static/empresa.png" alt="Logo" class="w-8 h-8 rounded-lg object-contain bg-white/5 p-0.5">
+        <div>
+          <p class="font-bold text-verde-400 text-sm leading-tight">MaqControl</p>
+          <p class="text-[10px] text-slate-500">Portal do Colaborador</p>
+        </div>
+      </a>
+
+      <!-- Usuário + sair -->
+      <div class="flex items-center gap-2">
+        <span class="text-sm text-slate-400 hidden sm:block">
+          {% if user is defined %}{{ user.name }}{% endif %}
+        </span>
+        <a href="/logout" title="Sair"
+          class="p-2 rounded-lg text-red-400/70 hover:bg-red-500/20 hover:text-red-400 transition-all">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+          </svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Conteúdo -->
+  <main class="relative z-10 max-w-2xl mx-auto px-4 py-6">
+    {% block content %}{% endblock %}
+  </main>
+
+  <script>
+    // Fundo animado
+    (function () {
+      const canvas = document.getElementById('bg-canvas');
+      const ctx = canvas.getContext('2d');
+      let blobs = [];
+
+      function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+
+      function initBlobs() {
+        blobs = Array.from({ length: 5 }, () => ({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          r: 150 + Math.random() * 250,
+          vx: (Math.random() - 0.5) * 0.3,
+          vy: (Math.random() - 0.5) * 0.3,
+          color: ['#16a34a', '#15803d', '#166534', '#14532d', '#22c55e'][Math.floor(Math.random() * 5)],
+          opacity: 0.10 + Math.random() * 0.10,
+        }));
+      }
+
+      function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#0a1a0f';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        blobs.forEach(b => {
+          const grd = ctx.createRadialGradient(b.x, b.y, 0, b.x, b.y, b.r);
+          grd.addColorStop(0, b.color + Math.floor(b.opacity * 255).toString(16).padStart(2, '0'));
+          grd.addColorStop(1, 'transparent');
+          ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+          ctx.fillStyle = grd; ctx.fill();
+          b.x += b.vx; b.y += b.vy;
+          if (b.x < -b.r) b.x = canvas.width + b.r;
+          if (b.x > canvas.width + b.r) b.x = -b.r;
+          if (b.y < -b.r) b.y = canvas.height + b.r;
+          if (b.y > canvas.height + b.r) b.y = -b.r;
+        });
+        requestAnimationFrame(draw);
+      }
+
+      window.addEventListener('resize', resize);
+      resize(); initBlobs(); draw();
+    })();
+
+    // Toast helper
+    function showToast(msg, type = 'info', duration = 5000) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = 'toast' + (type === 'error' ? ' toast-error' : '');
+
+      const icon = type === 'error'
+        ? `<svg class="w-5 h-5 text-red-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`
+        : `<svg class="w-5 h-5 text-verde-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>`;
+
+      toast.innerHTML = `${icon}<span class="text-sm leading-snug">${msg}</span>`;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.classList.add('removing');
+        setTimeout(() => toast.remove(), 300);
+      }, duration);
+    }
+  </script>
+
+  {% block extra_scripts %}{% endblock %}
+</body>
+
+</html>
