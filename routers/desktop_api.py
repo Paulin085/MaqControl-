@@ -362,7 +362,14 @@ async def web_enviar_mensagem(chamado_id: str, body: ChatMessageRequest, request
 @router.websocket("/ws/notificacoes/{token}")
 async def websocket_notificacoes(websocket: WebSocket, token: str):
     """WebSocket de notificações para a aplicação desktop (token auth)."""
-    session = verify_desktop_token(token)
+    await websocket.accept()
+    from fastapi import HTTPException
+    try:
+        session = verify_desktop_token(token)
+    except HTTPException:
+        await websocket.close(code=4001)
+        return
+        
     user_id = session["user_id"]
     is_admin = session["is_admin"]
 

@@ -1,0 +1,17 @@
+[
+  {
+    "sala": "Sala de Reunião",
+    "titulo": "Alinhamento T.I",
+    "descricao": "Alinhar alguma coisa",
+    "data": "2026-07-22",
+    "hora_inicio": "09:00",
+    "hora_fim": "10:00",
+    "participantes": "Paulo e Vanessa",
+    "observacoes": null,
+    "id": "87da5a08-08b4-4047-9c57-979a060ec931",
+    "usuario_id": "admin-1",
+    "status": "Agendada",
+    "created_at": "2026-07-21 20:45:45.268586",
+    "updated_at": "2026-07-21 20:45:45.268600"
+  }
+]

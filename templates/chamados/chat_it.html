@@ -423,7 +423,7 @@
         }
       }catch(_){}
     };
-    ws.onclose=()=>{ setTimeout(conectarWS, wsDelay); wsDelay=Math.min(wsDelay*1.5,30000); };
+    ws.onclose=(e)=>{ if([4001,4003,4004].includes(e.code)) return; setTimeout(conectarWS, wsDelay); wsDelay=Math.min(wsDelay*1.5,30000); };
   }
   conectarWS();
 </script>

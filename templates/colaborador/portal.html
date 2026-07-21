@@ -473,7 +473,8 @@
       } catch (_) {}
     };
 
-    ws.onclose = () => {
+    ws.onclose = (e) => {
+      if ([4001, 4003, 4004].includes(e.code)) return;
       setTimeout(conectarWS, wsReconnectDelay);
       wsReconnectDelay = Math.min(wsReconnectDelay * 1.5, 30000);
     };

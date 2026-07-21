@@ -184,13 +184,16 @@
   <header class="relative z-10 glass sticky top-0">
     <div class="{% block header_class %}max-w-2xl mx-auto px-4 py-3{% endblock %} flex items-center justify-between">
       <!-- Logo + título -->
-      <a href="/colaborador/" class="flex items-center gap-3">
-        <img src="/static/empresa.png" alt="Logo" class="w-8 h-8 rounded-lg object-contain bg-white/5 p-0.5">
-        <div>
-          <p class="font-bold text-verde-400 text-sm leading-tight">MaqControl</p>
-          <p class="text-[10px] text-slate-500">Portal do Colaborador</p>
-        </div>
-      </a>
+      <div class="flex items-center gap-6">
+        <a href="/colaborador/" class="flex items-center gap-3">
+          <img src="/static/empresa.png" alt="Logo" class="w-8 h-8 rounded-lg object-contain bg-white/5 p-0.5">
+          <div>
+            <p class="font-bold text-verde-400 text-sm leading-tight">MaqControl</p>
+            <p class="text-[10px] text-slate-500">Portal do Colaborador</p>
+          </div>
+        </a>
+        <a href="/reservas/" class="text-sm font-semibold text-slate-300 hover:text-verde-400 transition-colors">Reserva de Salas</a>
+      </div>
 
       <!-- Usuário + sair -->
       <div class="flex items-center gap-2">
@@ -338,7 +341,8 @@
             }
           } catch (_) {}
         };
-        wsNotify.onclose = () => {
+        wsNotify.onclose = (e) => {
+          if ([4001, 4003, 4004].includes(e.code)) return;
           setTimeout(connectNotifications, delay);
           delay = Math.min(delay * 1.5, 30000);
         };

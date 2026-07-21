@@ -1,0 +1,560 @@
+{% extends "base.html" %}
+
+{% block title %}Reserva de Salas — MaqControl{% endblock %}
+
+{% block extra_head %}
+<!-- FullCalendar 6 CDN -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
+
+<style>
+  /* Customizações do FullCalendar para o tema escuro/glass */
+  .fc {
+    font-family: 'Sora', sans-serif;
+    color: #f1f5f9;
+  }
+  
+  .fc-theme-standard td, .fc-theme-standard th {
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  html.light .fc-theme-standard td, html.light .fc-theme-standard th {
+    border-color: rgba(0, 0, 0, 0.1);
+  }
+  
+  html.light .fc {
+    color: #1e293b;
+  }
+  
+  .fc .fc-toolbar-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+  }
+  
+  .fc .fc-button-primary {
+    background: rgba(34, 197, 94, 0.2);
+    border: 1px solid rgba(34, 197, 94, 0.4);
+    color: #86efac;
+    font-weight: 600;
+    transition: all 0.2s;
+  }
+  
+  .fc .fc-button-primary:hover {
+    background: rgba(34, 197, 94, 0.4);
+    border-color: rgba(34, 197, 94, 0.6);
+  }
+  
+  .fc .fc-button-primary:disabled {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #94a3b8;
+  }
+  
+  .fc-day-today {
+    background: rgba(34, 197, 94, 0.05) !important;
+  }
+  
+  .fc-event {
+    cursor: pointer;
+    border-radius: 6px;
+    padding: 2px 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border: none !important;
+  }
+
+  /* Indicadores visuais adicionais */
+  .indicador-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 9999px;
+    border-width: 1px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-8 animate-fade-in relative z-10">
+  
+  <!-- Cabeçalho com Título e Botão -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-white text-dynamic">Reserva de Salas</h1>
+      <p class="text-slate-400 text-sm text-dynamic">Agende reuniões, treinamentos e consulte a disponibilidade das salas em tempo real.</p>
+    </div>
+    
+    <button onclick="abrirModalNovaReserva()" class="btn-primary shadow-lg shadow-verde-500/20 self-start sm:self-auto">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+      </svg>
+      Nova Reserva
+    </button>
+  </div>
+
+  <!-- Status de Ocupação das Salas (Indicador Visual) -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    {% for sala_nome, status in sala_status.items() %}
+    <div class="glass p-5 rounded-2xl flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="p-3 rounded-xl bg-white/5">
+          {% if sala_nome == "Sala de Reunião" %}
+          <!-- Icon Reunião -->
+          <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+          {% else %}
+          <!-- Icon Treinamento -->
+          <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14zm-4 6v-7.5l4-2.222" />
+          </svg>
+          {% endif %}
+        </div>
+        <div>
+          <h3 class="font-bold text-white text-dynamic">{{ sala_nome }}</h3>
+          <p class="text-xs text-slate-400">Capacidade padrão do setor</p>
+        </div>
+      </div>
+      
+      <div class="flex items-center gap-2">
+        {% if status == "Ocupada" %}
+        <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
+        <span class="text-sm font-semibold text-red-400">Ocupada Agora</span>
+        {% else %}
+        <span class="w-2.5 h-2.5 rounded-full bg-green-500"></span>
+        <span class="text-sm font-semibold text-green-400">Livre</span>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Layout em Duas Colunas: Calendário & Listagem -->
+  <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+    
+    <!-- Coluna 1 & 2: Calendário Interativo -->
+    <div class="xl:col-span-2 glass p-6 rounded-2xl">
+      <div class="mb-4 flex items-center justify-between">
+        <h2 class="text-lg font-bold text-white text-dynamic">Calendário de Reservas</h2>
+        <span class="text-xs text-slate-400">Clique em um horário/dia para agendar</span>
+      </div>
+      <div id="calendar" class="w-full"></div>
+    </div>
+    
+    <!-- Coluna 3: Filtros e Listagem Lateral -->
+    <div class="space-y-6">
+      
+      <!-- Painel de Filtros e Busca -->
+      <div class="glass p-6 rounded-2xl space-y-4">
+        <h2 class="text-base font-bold text-white text-dynamic">Filtros e Busca</h2>
+        
+        <form method="GET" action="/reservas/" class="space-y-3">
+          <!-- Busca por texto -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Pesquisar por título</label>
+            <input type="text" name="busca" value="{{ busca }}" placeholder="Ex: Planejamento" class="input-glass text-sm">
+          </div>
+          
+          <!-- Filtro de Sala -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Filtrar por Sala</label>
+            <select name="sala" class="input-glass text-sm">
+              <option value="">Todas as salas</option>
+              {% for s in salas %}
+              <option value="{{ s }}" {% if filtro_sala == s %}selected{% endif %}>{{ s }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          
+          <!-- Filtro de Data -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Filtrar por Data</label>
+            <input type="date" name="data_filtro" value="{{ filtro_data }}" class="input-glass text-sm">
+          </div>
+          
+          <!-- Filtro de Status -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-400 mb-1">Filtrar por Status</label>
+            <select name="status" class="input-glass text-sm">
+              <option value="">Todos os status</option>
+              {% for st in status_opcoes %}
+              <option value="{{ st }}" {% if filtro_status == st %}selected{% endif %}>{{ st }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          
+          <div class="flex gap-2 pt-2">
+            <button type="submit" class="btn-primary w-full text-xs justify-center py-2">Filtrar</button>
+            <a href="/reservas/" class="btn-secondary w-full text-xs text-center py-2 bg-white/5 border border-white/10 text-slate-300 rounded-lg hover:bg-white/10 transition-colors flex items-center justify-center">Limpar</a>
+          </div>
+        </form>
+      </div>
+      
+      <!-- Lista de Reservas Recentes/Filtradas -->
+      <div class="glass p-6 rounded-2xl space-y-4 max-h-[500px] overflow-y-auto">
+        <h2 class="text-base font-bold text-white text-dynamic">Lista de Reservas</h2>
+        
+        {% if reservas %}
+        <div class="space-y-3">
+          {% for r in reservas %}
+          <div class="p-4 rounded-xl bg-white/5 border border-white/10 hover:border-white/20 transition-all space-y-2 cursor-pointer"
+               data-id="{{ r.id }}"
+               data-sala="{{ r.sala.value }}"
+               data-titulo="{{ r.titulo }}"
+               data-descricao="{{ r.descricao or '' }}"
+               data-data="{{ r.data.isoformat() }}"
+               data-hora_inicio="{{ r.hora_inicio }}"
+               data-hora_fim="{{ r.hora_fim }}"
+               data-participantes="{{ r.participantes or '' }}"
+               data-observacoes="{{ r.observacoes or '' }}"
+               data-status="{{ r.status.value }}"
+               data-usuario_id="{{ r.usuario_id }}"
+               data-solicitante="{{ user_map.get(r.usuario_id, 'Desconhecido') }}"
+               onclick="visualizarDetalhesReservaCard(this)">
+            <div class="flex items-start justify-between gap-2">
+              <span class="text-xs font-bold {{ cores_salas[r.sala.value] }} px-2 py-0.5 rounded-md border text-center shrink-0">
+                {{ r.sala.value }}
+              </span>
+              <span class="text-[10px] font-bold {{ cores_status[r.status.value] }} px-2 py-0.5 rounded-md border shrink-0">
+                {{ r.status.value }}
+              </span>
+            </div>
+            
+            <h4 class="font-bold text-sm text-white line-clamp-1">{{ r.titulo }}</h4>
+            <p class="text-xs text-slate-400 flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              {{ r.data.strftime('%d/%m/%Y') }} ({{ r.hora_inicio }} - {{ r.hora_fim }})
+            </p>
+            <p class="text-xs text-slate-500">
+              Responsável: {{ user_map.get(r.usuario_id, 'Desconhecido') }}
+            </p>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-xs text-slate-500 text-center py-4">Nenhuma reserva encontrada para os filtros atuais.</p>
+        {% endif %}
+      </div>
+      
+    </div>
+  </div>
+
+</div>
+
+<!-- ── MODAL NOVA RESERVA ── -->
+<div id="modal-nova-reserva" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm items-center justify-center p-4">
+  <div class="glass-strong rounded-2xl w-full max-w-lg overflow-hidden animate-zoom-in">
+    <div class="px-6 py-4 border-b border-white/10 flex items-center justify-between">
+      <h3 class="font-bold text-white text-lg" id="modal-titulo-cadastro">Nova Reserva de Sala</h3>
+      <button onclick="fecharModalNovaReserva()" class="text-slate-400 hover:text-white transition-colors">✕</button>
+    </div>
+    
+    <form id="form-reserva" onsubmit="salvarReserva(event)" class="p-6 space-y-4">
+      <input type="hidden" id="reserva-id" name="reserva_id">
+      
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <!-- Sala -->
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Sala</label>
+          <select id="reserva-sala" name="sala" required class="input-glass">
+            {% for s in salas %}
+            <option value="{{ s }}">{{ s }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        
+        <!-- Título -->
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Título do Agendamento</label>
+          <input type="text" id="reserva-titulo" name="titulo" required placeholder="Ex: Reunião Mensal de TI" class="input-glass">
+        </div>
+        
+        <!-- Descrição -->
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Descrição</label>
+          <textarea id="reserva-descricao" name="descricao" rows="2" placeholder="Descreva brevemente o objetivo da reserva..." class="input-glass"></textarea>
+        </div>
+        
+        <!-- Data -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Data</label>
+          <input type="date" id="reserva-data" name="data" required class="input-glass">
+        </div>
+        
+        <!-- Status (exibido apenas ao editar) -->
+        <div id="wrapper-status" class="hidden">
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Status</label>
+          <select id="reserva-status" name="status" class="input-glass">
+            {% for st in status_opcoes %}
+            <option value="{{ st }}">{{ st }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        
+        <!-- Hora Início -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Hora de Início</label>
+          <input type="time" id="reserva-hora-inicio" name="hora_inicio" required class="input-glass">
+        </div>
+        
+        <!-- Hora Fim -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Hora de Término</label>
+          <input type="time" id="reserva-hora-fim" name="hora_fim" required class="input-glass">
+        </div>
+        
+        <!-- Participantes -->
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Participantes (opcional)</label>
+          <input type="text" id="reserva-participantes" name="participantes" placeholder="Ex: Paulo, João, Vanessa" class="input-glass">
+        </div>
+        
+        <!-- Observações -->
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Observações (opcional)</label>
+          <textarea id="reserva-observacoes" name="observacoes" rows="2" placeholder="Observações adicionais..." class="input-glass"></textarea>
+        </div>
+      </div>
+      
+      <div class="flex flex-col sm:flex-row justify-end gap-2 pt-4 border-t border-white/10">
+        <!-- Botão Excluir (somente admin no modo edição) -->
+        {% if user.is_admin %}
+        <button type="button" id="btn-excluir-reserva" onclick="excluirReservaAtual()" class="btn-secondary bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 hidden">Excluir</button>
+        {% endif %}
+        <!-- Botão Cancelar Reserva (criador ou admin no modo edição) -->
+        <button type="button" id="btn-cancelar-reserva" onclick="cancelarReservaAtual()" class="btn-secondary bg-orange-500/10 hover:bg-orange-500/20 text-orange-400 border border-orange-500/30 hidden">Cancelar Reserva</button>
+        
+        <button type="button" onclick="fecharModalNovaReserva()" class="btn-secondary bg-white/5 border border-white/10 text-slate-300 hover:bg-white/10">Voltar</button>
+        <button type="submit" class="btn-primary" id="btn-salvar-modal">Agendar</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  let calendar;
+  const currentUserId = "{{ user.id }}";
+  const isAdmin = {% if user.is_admin %}true{% else %}false{% endif %};
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const calendarEl = document.getElementById('calendar');
+    
+    // Inicializa o FullCalendar
+    calendar = new FullCalendar.Calendar(calendarEl, {
+      locale: 'pt-br',
+      initialView: 'dayGridMonth',
+      headerToolbar: {
+        left: 'prev,next today',
+        center: 'title',
+        right: 'dayGridMonth,timeGridWeek,timeGridDay'
+      },
+      buttonText: {
+        today: 'Hoje',
+        month: 'Mês',
+        week: 'Semana',
+        day: 'Dia'
+      },
+      events: '/reservas/events',
+      selectable: true,
+      selectHelper: true,
+      
+      // Ao clicar em uma data ou horário do calendário
+      select: function(info) {
+        const dateStr = info.startStr.split('T')[0];
+        let startTime = "";
+        let endTime = "";
+        
+        if (info.startStr.includes('T')) {
+          startTime = info.startStr.split('T')[1].substring(0, 5);
+          endTime = info.endStr.split('T')[1].substring(0, 5);
+        }
+        
+        abrirModalNovaReserva(dateStr, startTime, endTime);
+      },
+      
+      // Ao clicar em uma reserva existente no calendário
+      eventClick: function(info) {
+        const ev = info.event;
+        const res = {
+          id: ev.id,
+          sala: ev.extendedProps.sala,
+          titulo: ev.title.replace(/^\[.*?\]\s*/, ''),
+          descricao: ev.extendedProps.descricao,
+          data: ev.startStr.split('T')[0],
+          hora_inicio: ev.startStr.split('T')[1].substring(0, 5),
+          hora_fim: ev.endStr.split('T')[1].substring(0, 5),
+          participantes: ev.extendedProps.participantes,
+          observacoes: ev.extendedProps.observacoes,
+          usuario_id: ev.extendedProps.usuario_id,
+          status: ev.extendedProps.status
+        };
+        visualizarDetalhesReserva(res, ev.extendedProps.solicitante);
+      }
+    });
+    
+    calendar.render();
+  });
+
+  function abrirModalNovaReserva(data = "", horaInicio = "", horaFim = "") {
+    document.getElementById('form-reserva').reset();
+    document.getElementById('reserva-id').value = "";
+    document.getElementById('modal-titulo-cadastro').innerText = "Nova Reserva de Sala";
+    
+    // Configura campos default
+    if (data) document.getElementById('reserva-data').value = data;
+    else document.getElementById('reserva-data').value = "{{ hoje }}";
+    
+    if (horaInicio) document.getElementById('reserva-hora-inicio').value = horaInicio;
+    if (horaFim) document.getElementById('reserva-hora-fim').value = horaFim;
+
+    // Ajusta visibilidade de botões do modo edição
+    document.getElementById('wrapper-status').classList.add('hidden');
+    const btnExcluir = document.getElementById('btn-excluir-reserva');
+    if (btnExcluir) btnExcluir.classList.add('hidden');
+    document.getElementById('btn-cancelar-reserva').classList.add('hidden');
+    document.getElementById('btn-salvar-modal').innerText = "Agendar";
+    document.getElementById('btn-salvar-modal').classList.remove('hidden');
+
+    document.getElementById('modal-nova-reserva').style.display = 'flex';
+  }
+
+  function fecharModalNovaReserva() {
+    document.getElementById('modal-nova-reserva').style.display = 'none';
+  }
+
+  function visualizarDetalhesReservaCard(el) {
+    const res = {
+      id: el.dataset.id,
+      sala: el.dataset.sala,
+      titulo: el.dataset.titulo,
+      descricao: el.dataset.descricao,
+      data: el.dataset.data,
+      hora_inicio: el.dataset.hora_inicio,
+      hora_fim: el.dataset.hora_fim,
+      participantes: el.dataset.participantes,
+      observacoes: el.dataset.observacoes,
+      usuario_id: el.dataset.usuario_id,
+      status: el.dataset.status
+    };
+    visualizarDetalhesReserva(res, el.dataset.solicitante);
+  }
+
+  function visualizarDetalhesReserva(res, solicitanteNome) {
+    document.getElementById('reserva-id').value = res.id;
+    document.getElementById('reserva-sala').value = res.sala;
+    document.getElementById('reserva-titulo').value = res.titulo;
+    document.getElementById('reserva-descricao').value = res.descricao || "";
+    document.getElementById('reserva-data').value = res.data;
+    document.getElementById('reserva-hora-inicio').value = res.hora_inicio;
+    document.getElementById('reserva-hora-fim').value = res.hora_fim;
+    document.getElementById('reserva-participantes').value = res.participantes || "";
+    document.getElementById('reserva-observacoes').value = res.observacoes || "";
+    document.getElementById('reserva-status').value = res.status;
+
+    document.getElementById('modal-titulo-cadastro').innerText = `Reserva de: ${solicitanteNome}`;
+
+    // Mostra status e botões apenas se for dono ou administrador
+    const podeEditar = isAdmin || res.usuario_id === currentUserId;
+
+    document.getElementById('wrapper-status').classList.remove('hidden');
+    
+    const btnExcluir = document.getElementById('btn-excluir-reserva');
+    if (btnExcluir) {
+      if (isAdmin) btnExcluir.classList.remove('hidden');
+      else btnExcluir.classList.add('hidden');
+    }
+
+    const btnCancelar = document.getElementById('btn-cancelar-reserva');
+    if (podeEditar && res.status === "Agendada") {
+      btnCancelar.classList.remove('hidden');
+    } else {
+      btnCancelar.classList.add('hidden');
+    }
+
+    if (podeEditar) {
+      document.getElementById('btn-salvar-modal').innerText = "Salvar Alterações";
+      document.getElementById('btn-salvar-modal').classList.remove('hidden');
+    } else {
+      document.getElementById('btn-salvar-modal').classList.add('hidden');
+    }
+
+    document.getElementById('modal-nova-reserva').style.display = 'flex';
+  }
+
+  async function salvarReserva(event) {
+    event.preventDefault();
+    const id = document.getElementById('reserva-id').value;
+    const form = document.getElementById('form-reserva');
+    const formData = new FormData(form);
+
+    const url = id ? `/reservas/editar/${id}` : '/reservas/nova';
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        body: formData
+      });
+      const result = await response.json();
+
+      if (response.ok && result.status === 'ok') {
+        fecharModalNovaReserva();
+        calendar.refetchEvents();
+        window.location.reload(); // Recarrega para atualizar a listagem lateral
+      } else {
+        alert(result.msg || 'Erro ao registrar reserva. Verifique conflitos de horários.');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Ocorreu um erro de conexão.');
+    }
+  }
+
+  async function cancelarReservaAtual() {
+    const id = document.getElementById('reserva-id').value;
+    if (!id) return;
+
+    if (!confirm('Deseja realmente cancelar esta reserva?')) return;
+
+    try {
+      const response = await fetch(`/reservas/cancelar/${id}`, { method: 'POST' });
+      const result = await response.json();
+      if (response.ok && result.status === 'ok') {
+        fecharModalNovaReserva();
+        calendar.refetchEvents();
+        window.location.reload();
+      } else {
+        alert(result.msg || 'Erro ao cancelar reserva.');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Erro de conexão ao tentar cancelar.');
+    }
+  }
+
+  async function excluirReservaAtual() {
+    const id = document.getElementById('reserva-id').value;
+    if (!id) return;
+
+    if (!confirm('Tem certeza que deseja excluir permanentemente esta reserva? Esta ação não pode ser desfeita.')) return;
+
+    try {
+      const response = await fetch(`/reservas/excluir/${id}`, { method: 'POST' });
+      const result = await response.json();
+      if (response.ok && result.status === 'ok') {
+        fecharModalNovaReserva();
+        calendar.refetchEvents();
+        window.location.reload();
+      } else {
+        alert(result.msg || 'Erro ao excluir reserva.');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Erro de conexão ao tentar excluir.');
+    }
+  }
+</script>
+{% endblock %}

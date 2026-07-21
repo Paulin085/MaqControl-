@@ -560,7 +560,8 @@
         } catch (_) {}
       };
 
-      chatWS.onclose = () => {
+      chatWS.onclose = (e) => {
+        if ([4001, 4003, 4004].includes(e.code)) return;
         setTimeout(connectChatWS, 2000);
       };
     }

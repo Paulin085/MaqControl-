@@ -22,6 +22,7 @@ async def ws_notificacoes_web(websocket: WebSocket):
     Autenticação via cookie 'maqcontrol_auth'.
     Recebe: novo_chamado | nova_mensagem | atualizacao_chamado
     """
+    await websocket.accept()
     session_token = websocket.cookies.get("maqcontrol_auth")
     if not session_token:
         await websocket.close(code=4001)
@@ -50,6 +51,7 @@ async def ws_chat_web(websocket: WebSocket, chamado_id: str):
     Autenticação via cookie 'maqcontrol_auth'.
     Recebe: nova_mensagem_chat
     """
+    await websocket.accept()
     session_token = websocket.cookies.get("maqcontrol_auth")
     if not session_token:
         await websocket.close(code=4001)

@@ -12,6 +12,7 @@ DATA_DIR.mkdir(exist_ok=True)
 ARQUIVO_MAQUINAS     = DATA_DIR / "maquinas.json"
 ARQUIVO_SETORES      = DATA_DIR / "setores.json"
 ARQUIVO_MANUTENCOES  = DATA_DIR / "manutencoes.json"
+ARQUIVO_RESERVAS     = DATA_DIR / "reservas.json"
 
 # Configurações de manutenção
 DIAS_ALERTA_MANUTENCAO = 15  # Avisar X dias antes da manutenção

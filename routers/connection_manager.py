@@ -38,7 +38,6 @@ class ConnectionManager:
     # ── Notificações gerais ───────────────────────────────────────────────────
 
     async def connect(self, websocket: WebSocket, user_id: str, is_admin: bool) -> None:
-        await websocket.accept()
         async with self._lock:
             self.active_connections.setdefault(user_id, []).append(websocket)
             if is_admin:
@@ -84,7 +83,6 @@ class ConnectionManager:
         self, websocket: WebSocket, chamado_id: str, user_id: str, is_admin: bool
     ) -> None:
         """Conecta um usuário à sala de chat de um chamado específico."""
-        await websocket.accept()
         async with self._lock:
             if chamado_id not in self.chat_connections:
                 self.chat_connections[chamado_id] = []
