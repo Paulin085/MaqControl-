@@ -291,7 +291,7 @@
         {% if c.setor_loja %}<p class="text-xs text-verde-400/80 mb-3">{{ c.setor_loja }}</p>{% else %}<div class="mb-3"></div>{% endif %}
         <p class="text-sm text-slate-400 line-clamp-2 mb-4">{{ c.descricao }}</p>
         <div class="flex items-center justify-end">
-          <a href="/colaborador/chat/{{ c.id }}" class="chat-btn" id="chat-btn-{{ c.id }}">
+          <a href="/chat?c={{ c.id }}" class="chat-btn" id="chat-btn-{{ c.id }}">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
@@ -332,7 +332,7 @@
         {% if c.setor_loja %}<p class="text-xs text-verde-400/80 mb-3">{{ c.setor_loja }}</p>{% else %}<div class="mb-3"></div>{% endif %}
         <p class="text-sm text-slate-400 line-clamp-2 mb-4">{{ c.descricao }}</p>
         <div class="flex items-center justify-end">
-          <a href="/colaborador/chat/{{ c.id }}" class="chat-btn" id="chat-btn-{{ c.id }}">
+          <a href="/chat?c={{ c.id }}" class="chat-btn" id="chat-btn-{{ c.id }}">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
@@ -379,7 +379,7 @@
         </div>
         {% else %}<div class="mb-4"></div>{% endif %}
         <div class="flex items-center justify-end">
-          <a href="/colaborador/chat/{{ c.id }}" class="chat-btn" id="chat-btn-{{ c.id }}">
+          <a href="/chat?c={{ c.id }}" class="chat-btn" id="chat-btn-{{ c.id }}">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>

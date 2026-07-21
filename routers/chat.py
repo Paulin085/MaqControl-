@@ -64,6 +64,10 @@ async def chat_workspace(request: Request, c: Optional[str] = Query(None)):
     # Ordenar por data da última mensagem/registro (mais recente primeiro)
     conversas.sort(key=lambda x: x["last_msg_time"], reverse=True)
 
+    # Se colaborador acessou sem ?c=, seleciona automaticamente seu chamado mais recente
+    if not c and not user.is_admin and conversas:
+        c = conversas[0]["id"]
+
     # 3. Se selecionou um chamado específico
     chamado_selecionado = None
     mensagens_selecionadas = []

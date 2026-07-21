@@ -66,7 +66,6 @@ _ROTAS_APENAS_TI = [
 _PERMISSOES_ROTA = [
     ("/colaborador/novo",  "abrir_chamado"),
     ("/colaborador/chat",  "chat"),
-    ("/colaborador/",      "meus_chamados"),
 ]
 
 
@@ -121,6 +120,9 @@ async def verify_authentication(request: Request, call_next):
 
         # 7. Verificação granular de permissões para colaboradores
         if not _colaborador_tem_permissao(user, path):
+            if path == "/colaborador/":
+                from fastapi import HTTPException
+                raise HTTPException(status_code=403, detail="Acesso negado ao portal do colaborador.")
             # Sem permissão → redireciona para o portal principal
             return RedirectResponse(url="/colaborador/", status_code=303)
 
@@ -214,4 +216,4 @@ async def voltar_chamado_emergencial(request: Request, id: str = Query(...)):
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True, ssl_keyfile="key.pem", ssl_certfile="cert.pem")

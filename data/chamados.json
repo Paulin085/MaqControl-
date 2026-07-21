@@ -2210,5 +2210,19 @@
     "anexo_path": null,
     "usuario_id": "7d5130b7-41bf-4144-bc70-e3afa81ec67c",
     "id": "5a227c0c-c67c-4923-add6-98b57e2194de"
+  },
+  {
+    "setor_loja": "T.i",
+    "solicitante": "Vanessa Fortes",
+    "titulo": "teste3",
+    "tipo": "Chamado",
+    "dificuldade": "Média",
+    "descricao": "teste3",
+    "resolucao": null,
+    "status": "Fila",
+    "data_registro": "2026-07-21 15:10:01.602210",
+    "anexo_path": null,
+    "usuario_id": "7d5130b7-41bf-4144-bc70-e3afa81ec67c",
+    "id": "da1cf8a4-7714-45c8-9b57-c23ec3c9e662"
   }
 ]

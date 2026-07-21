@@ -182,7 +182,7 @@
 
   <!-- Header fixo -->
   <header class="relative z-10 glass sticky top-0">
-    <div class="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div class="{% block header_class %}max-w-2xl mx-auto px-4 py-3{% endblock %} flex items-center justify-between">
       <!-- Logo + título -->
       <a href="/colaborador/" class="flex items-center gap-3">
         <img src="/static/empresa.png" alt="Logo" class="w-8 h-8 rounded-lg object-contain bg-white/5 p-0.5">
@@ -208,7 +208,7 @@
   </header>
 
   <!-- Conteúdo -->
-  <main class="relative z-10 max-w-2xl mx-auto px-4 py-6">
+  <main class="relative z-10 {% block main_class %}max-w-2xl mx-auto px-4 py-6{% endblock %}">
     {% block content %}{% endblock %}
   </main>
 
@@ -280,6 +280,32 @@
 
     // ── WebSocket de Notificações Gerais ──────────────────────────────────────
     (function () {
+      // Solicita permissão para notificações e desbloqueia áudio no primeiro clique
+      document.body.addEventListener('click', function() {
+        if ("Notification" in window && Notification.permission === "default") {
+          Notification.requestPermission();
+        }
+      }, { once: true });
+
+      function notificarNavegador(titulo, mensagem, urlTarget) {
+        // Tocar o som
+        const audio = document.getElementById('som-notificacao');
+        if (audio) {
+          audio.currentTime = 0;
+          audio.play().catch(e => console.log('Áudio bloqueado:', e));
+        }
+
+        // Mostrar o Pop-up com imagem grande
+        if ("Notification" in window && Notification.permission === "granted") {
+          const n = new Notification(titulo, { 
+            body: mensagem, 
+            icon: "/static/empresa.png",
+            image: "/static/empresa.png" // Isso deixa a notificação bem maior no Windows!
+          });
+          if (urlTarget) n.onclick = () => { window.focus(); window.location.href = urlTarget; };
+        }
+      }
+
       let wsNotify, delay = 2000;
       function connectNotifications() {
         const proto = location.protocol === 'https:' ? 'wss' : 'ws';
@@ -287,9 +313,7 @@
         wsNotify.onopen = () => {
           delay = 2000;
           setInterval(() => {
-            if (wsNotify && wsNotify.readyState === WebSocket.OPEN) {
-              wsNotify.send('ping');
-            }
+            if (wsNotify && wsNotify.readyState === WebSocket.OPEN) wsNotify.send('ping');
           }, 25000);
         };
         wsNotify.onmessage = (e) => {
@@ -297,17 +321,20 @@
             const d = JSON.parse(e.data);
             if (d.tipo === 'pong') return;
             
-            // Dispara evento JS global
             window.dispatchEvent(new CustomEvent('ws:' + d.tipo, { detail: d }));
 
-            // Exibe toast se necessário
             if (d.tipo === 'nova_mensagem') {
-              // Só exibe toast se NÃO estivermos na página de chat deste chamado
               if (typeof ACTIVE_CHAMADO_ID === 'undefined' || ACTIVE_CHAMADO_ID !== d.chamado_id) {
-                showToast(`💬 Nova mensagem de <strong>${escapeHtml(d.remetente)}</strong> em "${escapeHtml(d.chamado_titulo)}": "${escapeHtml(d.preview)}"`);
+                const toastMsg = `💬 Nova mensagem de <strong>${escapeHtml(d.remetente)}</strong> em "${escapeHtml(d.chamado_titulo)}": "${escapeHtml(d.preview)}"`;
+                const popMsg = `Nova mensagem de ${d.remetente}: "${d.preview}"`;
+                showToast(toastMsg);
+                notificarNavegador("Nova Mensagem", popMsg, `/chat?c=${d.chamado_id}`);
               }
             } else if (d.tipo === 'atualizacao_chamado') {
-              showToast(`🔔 Status do chamado "${escapeHtml(d.chamado_titulo)}" alterado para <strong>${escapeHtml(d.novo_status)}</strong>`);
+              const toastMsg = `🔔 Status do chamado "${escapeHtml(d.chamado_titulo)}" alterado para <strong>${escapeHtml(d.novo_status)}</strong>`;
+              const popMsg = `Status alterado para ${d.novo_status}`;
+              showToast(toastMsg);
+              notificarNavegador("Chamado Atualizado", popMsg, `/colaborador/`);
             }
           } catch (_) {}
         };
@@ -328,6 +355,12 @@
       connectNotifications();
     })();
   </script>
+
+  <!-- Elemento de áudio para notificações -->
+  <audio id="som-notificacao" preload="auto">
+    <!-- Você pode trocar este arquivo por outro som colocando-o na pasta static/ -->
+    <source src="/static/notificacao.wav" type="audio/wav">
+  </audio>
 
   {% block extra_scripts %}{% endblock %}
 </body>

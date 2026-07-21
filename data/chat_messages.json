@@ -72,5 +72,159 @@
       "timestamp": "2026-07-20T17:53:03.276850",
       "lido": false
     }
+  ],
+  "08582a07-614a-46be-945b-cd25d47049ed": [
+    {
+      "id": "59e83005-8d50-4c1b-a9a7-69e0879d0639",
+      "chamado_id": "08582a07-614a-46be-945b-cd25d47049ed",
+      "remetente_id": "7d5130b7-41bf-4144-bc70-e3afa81ec67c",
+      "remetente_nome": "Vanessa Fortes",
+      "is_admin": false,
+      "mensagem": "hello my friend",
+      "timestamp": "2026-07-21T14:44:06.019051",
+      "lido": false
+    },
+    {
+      "id": "c3b12245-d613-49a0-bab9-68ed3b4ccedb",
+      "chamado_id": "08582a07-614a-46be-945b-cd25d47049ed",
+      "remetente_id": "admin-1",
+      "remetente_nome": "Administrador",
+      "is_admin": true,
+      "mensagem": "hello mamis",
+      "timestamp": "2026-07-21T14:44:21.170335",
+      "lido": false
+    }
+  ],
+  "da1cf8a4-7714-45c8-9b57-c23ec3c9e662": [
+    {
+      "id": "85862f50-3e4c-4d5f-857f-0a89f08710f6",
+      "chamado_id": "da1cf8a4-7714-45c8-9b57-c23ec3c9e662",
+      "remetente_id": "7d5130b7-41bf-4144-bc70-e3afa81ec67c",
+      "remetente_nome": "Vanessa Fortes",
+      "is_admin": false,
+      "mensagem": "helloow",
+      "timestamp": "2026-07-21T15:10:16.644183",
+      "lido": false
+    },
+    {
+      "id": "9bd27831-d7ab-49cb-b18b-73f76fdc4096",
+      "chamado_id": "da1cf8a4-7714-45c8-9b57-c23ec3c9e662",
+      "remetente_id": "admin-1",
+      "remetente_nome": "Administrador",
+      "is_admin": true,
+      "mensagem": "Oii",
+      "timestamp": "2026-07-21T15:13:36.752704",
+      "lido": false
+    },
+    {
+      "id": "659c4a5c-2f34-41a6-8198-605f19ef6e61",
+      "chamado_id": "da1cf8a4-7714-45c8-9b57-c23ec3c9e662",
+      "remetente_id": "admin-1",
+      "remetente_nome": "Administrador",
+      "is_admin": true,
+      "mensagem": "Oii",
+      "timestamp": "2026-07-21T15:13:39.345178",
+      "lido": false
+    },
+    {
+      "id": "56124d89-1269-46ba-9b97-ef98eace8e44",
+      "chamado_id": "da1cf8a4-7714-45c8-9b57-c23ec3c9e662",
+      "remetente_id": "admin-1",
+      "remetente_nome": "Administrador",
+      "is_admin": true,
+      "mensagem": "Oii",
+      "timestamp": "2026-07-21T15:13:40.784473",
+      "lido": false
+    },
+    {
+      "id": "3013491b-9391-4a26-9824-5f016f142a3f",
+      "chamado_id": "da1cf8a4-7714-45c8-9b57-c23ec3c9e662",
+      "remetente_id": "admin-1",
+      "remetente_nome": "Administrador",
+      "is_admin": true,
+      "mensagem": "OII",
+      "timestamp": "2026-07-21T15:13:41.912884",
+      "lido": false
+    },
+    {
+      "id": "df677f8c-9767-403f-9ad9-2d7f8591970e",
+      "chamado_id": "da1cf8a4-7714-45c8-9b57-c23ec3c9e662",
+      "remetente_id": "admin-1",
+      "remetente_nome": "Administrador",
+      "is_admin": true,
+      "mensagem": "Oii",
+      "timestamp": "2026-07-21T15:15:38.337039",
+      "lido": false
+    },
+    {
+      "id": "e0d87056-d008-46fe-85dc-9d69a9e76e27",
+      "chamado_id": "da1cf8a4-7714-45c8-9b57-c23ec3c9e662",
+      "remetente_id": "admin-1",
+      "remetente_nome": "Administrador",
+      "is_admin": true,
+      "mensagem": "Oii",
+      "timestamp": "2026-07-21T15:15:49.593396",
+      "lido": false
+    },
+    {
+      "id": "fadee505-6150-4220-895a-a8b49b6de7d3",
+      "chamado_id": "da1cf8a4-7714-45c8-9b57-c23ec3c9e662",
+      "remetente_id": "admin-1",
+      "remetente_nome": "Administrador",
+      "is_admin": true,
+      "mensagem": "Oii",
+      "timestamp": "2026-07-21T15:15:59.712828",
+      "lido": false
+    },
+    {
+      "id": "d2dcb325-7045-4d18-9f47-08997343d7af",
+      "chamado_id": "da1cf8a4-7714-45c8-9b57-c23ec3c9e662",
+      "remetente_id": "admin-1",
+      "remetente_nome": "Administrador",
+      "is_admin": true,
+      "mensagem": "Oii",
+      "timestamp": "2026-07-21T15:16:06.096793",
+      "lido": false
+    },
+    {
+      "id": "6f7c51c9-7fe4-45a2-80c4-b5e444ddb1fe",
+      "chamado_id": "da1cf8a4-7714-45c8-9b57-c23ec3c9e662",
+      "remetente_id": "7d5130b7-41bf-4144-bc70-e3afa81ec67c",
+      "remetente_nome": "Vanessa Fortes",
+      "is_admin": false,
+      "mensagem": "hjkh",
+      "timestamp": "2026-07-21T15:16:28.668633",
+      "lido": false
+    },
+    {
+      "id": "e9791557-2816-4a49-95ab-8cb2b2e9b30f",
+      "chamado_id": "da1cf8a4-7714-45c8-9b57-c23ec3c9e662",
+      "remetente_id": "7d5130b7-41bf-4144-bc70-e3afa81ec67c",
+      "remetente_nome": "Vanessa Fortes",
+      "is_admin": false,
+      "mensagem": "hjk",
+      "timestamp": "2026-07-21T15:16:31.608319",
+      "lido": false
+    },
+    {
+      "id": "11644de9-4a79-4f3f-92e7-929eae1d0021",
+      "chamado_id": "da1cf8a4-7714-45c8-9b57-c23ec3c9e662",
+      "remetente_id": "7d5130b7-41bf-4144-bc70-e3afa81ec67c",
+      "remetente_nome": "Vanessa Fortes",
+      "is_admin": false,
+      "mensagem": "hjjjkjjh",
+      "timestamp": "2026-07-21T15:16:34.687728",
+      "lido": false
+    },
+    {
+      "id": "3c79206f-41c0-4051-b154-ca04b8ba14ed",
+      "chamado_id": "da1cf8a4-7714-45c8-9b57-c23ec3c9e662",
+      "remetente_id": "admin-1",
+      "remetente_nome": "Administrador",
+      "is_admin": true,
+      "mensagem": "AAIINNN",
+      "timestamp": "2026-07-21T15:25:13.656632",
+      "lido": false
+    }
   ]
 }

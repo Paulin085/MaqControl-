@@ -416,6 +416,31 @@ async def notificar_novo_chamado(chamado, usuario_nome: str):
         "timestamp": datetime.now().isoformat()
     }
     await manager.send_to_admins(notificacao)
+    
+    # Dispara notificação nativa do Windows no computador que hospeda o servidor
+    try:
+        import threading
+        import os
+        from win11toast import toast
+        
+        def show_toast():
+            try:
+                icon_path = os.path.abspath(os.path.join("static", "empresa.png"))
+                url = f"http://localhost:8000/chat?c={chamado.id}"
+                
+                toast(
+                    f"Novo Chamado: {chamado.titulo}",
+                    f"Aberto por {usuario_nome}\nSetor: {chamado.setor_loja or 'N/A'}",
+                    app_id="MaqControl TI",
+                    icon=icon_path,
+                    on_click=url
+                )
+            except Exception:
+                pass
+                
+        threading.Thread(target=show_toast, daemon=True).start()
+    except ImportError:
+        pass
 
 
 async def notificar_nova_mensagem(message: dict, chamado):
@@ -437,6 +462,32 @@ async def notificar_nova_mensagem(message: dict, chamado):
 
     # TI recebe se colaborador enviou
     await manager.send_to_admins(notificacao, exclude_user_id=remetente_id)
+    
+    # Dispara notificação nativa do Windows para a TI caso não seja a própria TI enviando
+    if not message["is_admin"]:
+        try:
+            import threading
+            import os
+            from win11toast import toast
+            
+            def show_chat_toast():
+                try:
+                    icon_path = os.path.abspath(os.path.join("static", "empresa.png"))
+                    url = f"http://localhost:8000/chat?c={chamado.id}"
+                    
+                    toast(
+                        f"Mensagem de {message['remetente_nome']}",
+                        f"Chamado: {chamado.titulo or 'Sem Título'}\n{message['mensagem']}",
+                        app_id="MaqControl TI",
+                        icon=icon_path,
+                        on_click=url
+                    )
+                except Exception:
+                    pass
+                    
+            threading.Thread(target=show_chat_toast, daemon=True).start()
+        except ImportError:
+            pass
 
 
 async def notificar_atualizacao_chamado(chamado):
